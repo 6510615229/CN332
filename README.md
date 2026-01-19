@@ -8,3 +8,7 @@
 6510615146 นัชชานนท์ โปษยาอนุวัตร์\
 6510615229 พลกฤต กันยายน\
 6510615245 พลอยพรรณ เต็งประยูร
+
+---
+## HW1
+Slides - https://www.canva.com/design/DAG-FqGxhog/WETEw5bAeZQ68bH7k0k9ag/edit
