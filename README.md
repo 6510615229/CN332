@@ -76,3 +76,7 @@
 - Progress 2 Slides - <https://www.canva.com/design/DAG_a04WSwg/FQ1uPqs1NCROcNY8U0ofHw/edit>
 - Progress 3 Slides - <https://www.canva.com/design/DAG_bOAeYPk/uN6iEoaxicajIgmomTNfaA/edit>
 - Progress 4 Slides - <https://www.canva.com/design/DAG_93YBSAo/bHV2WP_b1Eg1D0n5VauCHw/edit>
+
+---
+## Presentation Date
+- First presentation - 26/01/2026
