@@ -1,0 +1,28 @@
+# Python / Django Boilerplate
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+*.log
+.DS_Store
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables (สำคัญมาก ห้ามหลุด)
+.env
+
+# Static & Media
+staticfiles/
+media/
+
+# IDE Settings
+.vscode/
+.idea/
+
+# SSL Certificates (จาก django-sslserver)
+cert.pem
+key.pem
