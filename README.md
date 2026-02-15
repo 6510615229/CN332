@@ -62,9 +62,9 @@
 - 5.4 สร้างประสบการณ์ที่ดีแก่ผู้อยู่อาศัย: ลูกบ้านได้รับการบริการที่รวดเร็ว ทันสมัยและสามารถเข้าถึงข้อมูลได้ทุกที่ทุกเวลา
 
 
-# Django Social Login Demo (Google, Facebook, LINE)
+# Django Social Login Demo (Google, LINE)
 
-โปรเจกต์ตัวอย่าง Web Application ด้วย Django ที่รองรับระบบสมาชิก (Login/Register) และการเข้าสู่ระบบผ่าน Social Media (Google, Facebook, LINE) โดยใช้ `django-allauth` และรองรับ HTTPS บน localhost
+โปรเจกต์ตัวอย่าง Web Application ด้วย Django ที่รองรับระบบสมาชิก (Login/Register) และการเข้าสู่ระบบผ่าน Social Media (Google, LINE) โดยใช้ `django-allauth` และรองรับ HTTPS
 
 ## Features
 *   Login / Register / Logout ด้วย Username & Email ปกติ
