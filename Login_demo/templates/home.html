@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block content %}
+<div class="card shadow-sm text-center p-5">
+    <h1 class="mb-4">ระบบสมาชิก Demo</h1>
+
+    {% if user.is_authenticated %}
+        <!-- กรณี Login แล้ว -->
+        <div class="alert alert-success">
+            <h3>ยินดีต้อนรับ, {{ user.username }}!</h3>
+            <p>อีเมล: {{ user.email }}</p>
+            {% if user.first_name %}
+                <p>ชื่อจริง: {{ user.first_name }} {{ user.last_name }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- ข้อมูล Debug (ถ้าอยากเห็น) -->
+        <!-- <div class="text-start bg-light p-3 mt-3 rounded">
+            <small>Provider: {{ user.socialaccount_set.all.0.provider }}</small><br>
+            <small>UID: {{ user.socialaccount_set.all.0.uid }}</small>
+        </div> -->
+
+    {% else %}
+        <!-- กรณีขังไม่ได้ Login -->
+        <p class="lead text-muted">กรุณาเข้าสู่ระบบเพื่อใช้งาน</p>
+        
+        <div class="d-grid gap-2 col-md-6 mx-auto mt-4">
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">
+               เข้าสู่ระบบ (Login)
+            </a>
+            <a href="{% url 'account_signup' %}" class="btn btn-outline-secondary">
+               สมัครสมาชิกใหม่
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

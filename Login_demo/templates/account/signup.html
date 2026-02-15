@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <h2 class="text-center mb-4">สมัครสมาชิกใหม่</h2>
+
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+            
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            
+            <button class="btn btn-success w-100 mt-3" type="submit">ยืนยันการสมัคร</button>
+        </form>
+
+        <div class="mt-3 text-center">
+            <small>มีบัญชีอยู่แล้ว? <a href="{{ login_url }}">เข้าสู่ระบบ</a></small>
+        </div>
+    </div>
+</div>
+{% endblock %}
