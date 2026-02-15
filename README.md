@@ -61,6 +61,53 @@
 - 5.3 ลดค่าใช้จ่ายในระยะยาว: ระบบ Predictive Maintenance และ Smart Energy Control ช่วยประหยัดงบประมาณในการซ่อมบำรุงและค่าสาธารณูปโภคส่วนกลาง
 - 5.4 สร้างประสบการณ์ที่ดีแก่ผู้อยู่อาศัย: ลูกบ้านได้รับการบริการที่รวดเร็ว ทันสมัยและสามารถเข้าถึงข้อมูลได้ทุกที่ทุกเวลา
 
+
+# Django Social Login Demo (Google, Facebook, LINE)
+
+โปรเจกต์ตัวอย่าง Web Application ด้วย Django ที่รองรับระบบสมาชิก (Login/Register) และการเข้าสู่ระบบผ่าน Social Media (Google, Facebook, LINE) โดยใช้ `django-allauth` และรองรับ HTTPS บน localhost
+
+## Features
+*   Login / Register / Logout ด้วย Username & Email ปกติ
+*   **Social Login:**
+    *   Google
+    *   LINE (พร้อมระบบดึง Display Name มาเป็น Username อัตโนมัติ)
+*   User Profile ขั้นพื้นฐาน
+*   รองรับ HTTPS บน localhost
+
+## Requirements
+*   Python 3.10+
+*   Google Chrome / Microsoft Edge (สำหรับทดสอบ)
+
+## Installation
+
+1. **Clone Repository**
+   ```bash
+   git clone <your-repo-url>
+   cd <your-repo-folder>
+
+2. **Create Virtual Environment**
+   ```bash
+   python -m venv venv
+
+   # Windows
+   venv\Scripts\activate
+    
+   # Mac/Linux
+   source venv/bin/activate
+
+3. **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+ 
+4. **Setup Database**
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   
+5. **Running the Application**
+   ```bash
+   python manage.py runsslserver
+
 ## สมาชิกกลุ่ม
 
 6410525023 ศรุตา มีงาม\
@@ -69,6 +116,7 @@
 6510615146 นัชชานนท์ โปษยาอนุวัตร์\
 6510615229 พลกฤต กันยายน\
 6510615245 พลอยพรรณ เต็งประยูร
+
 
 ---
 
