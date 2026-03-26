@@ -98,13 +98,17 @@
 3. **Install Dependencies**
     ```bash
     pip install -r requirements.txt
+
+4. **Create .env file**\
+***Create .env file in /core and add client id and secret key***
  
-4. **Setup Database**
+5. **Setup Database**
    ```bash
    python manage.py migrate
    python manage.py createsuperuser
+   # or "winpty python manage.py createsuperuser" if the above command isn't working
    
-5. **Running the Application**
+6. **Running the Application**
    ```bash
    python manage.py runsslserver
 
@@ -148,13 +152,17 @@
     ```bash
     cd RuenPhiman
     pip install -r requirements.txt
+
+4. **Create .env file**\
+***Create .env file in /a_core and add client id and secret key***
  
-4. **Setup Database**
+5. **Setup Database**
    ```bash
    python manage.py migrate
    python manage.py createsuperuser
+   # or "winpty python manage.py createsuperuser" if the above command isn't working
    
-5. **Running the Application**
+6. **Running the Application**
    ```bash
    python manage.py runserver
 ## สมาชิกกลุ่ม
