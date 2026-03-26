@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+from environ import Env
+env = Env()
+env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -166,8 +170,8 @@ AUTHENTICATION_BACKENDS = [
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '732556043576-6oqs7lraoeqo92lpkhfo54v6hgk8cd79.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': env('OAUTH_GOOGLE_CLIENT_ID'),
+            'secret': env('OAUTH_GOOGLE_SECRET'),
             'key': ''
         },
         'SCOPE': [
@@ -178,34 +182,10 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         }
     },
-    'facebook': {
-        'APP': {
-            'client_id': '2092821578183770',
-            'secret': '8f8d60cbd7e2cb401dfd5c986d2a4d0d',
-            'key': ''
-        },
-        # facebook อาจต้องการ fields เพิ่มเติม
-        'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile'],
-        'FIELDS': [
-            'id',
-            'email',
-            'name',
-            'first_name',
-            'last_name',
-            'verified',
-            'locale',
-            'timezone',
-            'link',
-            'gender',
-            'updated_time',
-        ],
-        'EXCHANGE_TOKEN': True,
-    },
     'line': {
         'APP': {
-            'client_id': '2009135195',
-            'secret': 'e763067fa868c5fda9604b6c591650e7',
+            'client_id': env('OAUTH_LINE_CLIENT_ID'),
+            'secret': env('OAUTH_LINE_SECRET'),
             'key': ''
         },
         'SCOPE': ['profile', 'openid', 'email'],
