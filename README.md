@@ -82,8 +82,8 @@
 
 1. **Clone Repository**
    ```bash
-   git clone <your-repo-url>
-   cd <your-repo-folder>
+   git clone https://github.com/6510615229/CN332
+   cd CN332
 
 2. **Create Virtual Environment**
    ```bash
@@ -108,6 +108,55 @@
    ```bash
    python manage.py runsslserver
 
+# Ruen Phiman
+
+โปรเจกต์ตัวอย่าง Web Application เรือนพิมาณ
+
+## Features
+*   Login / Register / Logout ด้วย Username & Email ปกติ
+*   **Social Login:**
+    *   Google
+    *   Github
+    *   LINE (พร้อมระบบดึง Display Name มาเป็น Username อัตโนมัติ)
+*   User Profile ขั้นพื้นฐาน
+
+## Requirements
+*   Python 3.10+
+*   Google Chrome / Microsoft Edge (สำหรับทดสอบ)
+
+## Installation
+
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/6510615229/CN332
+   cd CN332
+
+2. **Create Virtual Environment**
+   ```bash
+   python -m venv venv
+
+   # Windows
+   venv\Scripts\activate
+
+   # Git Bash
+   source venv\Scripts\activate
+    
+   # Mac/Linux
+   source venv/bin/activate
+
+3. **Install Dependencies**
+    ```bash
+    cd RuenPhiman
+    pip install -r requirements.txt
+ 
+4. **Setup Database**
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   
+5. **Running the Application**
+   ```bash
+   python manage.py runserver
 ## สมาชิกกลุ่ม
 
 6410525023 ศรุตา มีงาม\
