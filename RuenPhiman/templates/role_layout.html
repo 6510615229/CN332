@@ -1,0 +1,50 @@
+<!-- templates/role_layout.html -->
+{% extends 'base.html' %}
+
+{% block layout %}
+<div class="flex min-h-[calc(100vh-80px)] bg-gray-50">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md border-r border-gray-200">
+        <div class="p-6 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-indigo-600">
+                {% if user.profile.role == 'juristic' %}ส่วนจัดการ: นิติบุคคล
+                {% elif user.profile.role == 'security' %}ส่วนจัดการ: รปภ.
+                {% else %}ส่วนจัดการ: ลูกบ้าน
+                {% endif %}
+            </h2>
+        </div>
+        
+        <nav class="mt-4">
+            <ul class="navitems flex flex-col gap-1 px-4">
+                
+                {% if user.profile.role == 'juristic' %}
+                    <li><a href="{% url 'juristic_page' 'dashboard' %}" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
+                    <li><a href="{% url 'juristic_page' 'users' %}" class="{% if active_tab == 'users' %}highlight{% endif %}">User and Roles</a></li>
+                    <li><a href="{% url 'juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' %}highlight{% endif %}">Maintenance Report</a></li>
+                    <li><a href="{% url 'juristic_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
+                    <li><a href="{% url 'juristic_page' 'report' %}" class="{% if active_tab == 'report' %}highlight{% endif %}">Report</a></li>
+                
+                {% elif user.profile.role == 'security' %}
+                    <li><a href="{% url 'security_page' 'dashboard' %}" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
+                    <li><a href="{% url 'security_page' 'cctv' %}" class="{% if active_tab == 'cctv' %}highlight{% endif %}">CCTV Monitoring</a></li>
+                    <li><a href="{% url 'security_page' 'incident' %}" class="{% if active_tab == 'incident' %}highlight{% endif %}">Incident Log</a></li>
+                
+                {% else %}
+                    <!-- ลูกบ้าน -->
+                    <li><a href="{% url 'resident_page' 'chatbot' %}" class="{% if active_tab == 'chatbot' %}highlight{% endif %}">AI Chatbot</a></li>
+                    <li><a href="{% url 'resident_page' 'ticket' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
+                    <li><a href="{% url 'resident_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 min-h-full flex items-center justify-center">
+            <h1 class="text-3xl text-gray-400 font-light">This is a <span class="text-indigo-600 font-bold">{{ page_title }}</span> page</h1>
+        </div>
+    </main>
+</div>
+{% endblock %}
