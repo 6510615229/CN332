@@ -112,7 +112,7 @@ def maintenance_risk_report_view(request, base_context=None):
         'priority_choices': MaintenanceTask.PRIORITY_CHOICES,
         'status_choices': MaintenanceTask.STATUS_CHOICES,
     }
-    return render(request, 'maintenance_report.html', context)
+    return render(request, 'juristic/maintenance_report.html', context)
 
 
 @login_required
@@ -161,7 +161,7 @@ def dashboard_view(request, base_context=None):
         'recent_incidents': recent_incidents,
         'maintenance_schedule': maintenance_schedule,
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'juristic/dashboard.html', context)
 
 
 @login_required
@@ -196,7 +196,7 @@ def user_roles_view(request, base_context=None):
         'users': users,
         'role_choices': role_choices,
     }
-    return render(request, 'user_roles.html', context)
+    return render(request, 'juristic/user_roles.html', context)
 
 
 @login_required
@@ -217,7 +217,7 @@ def billing_view(request, base_context=None):
         'invoices': invoices,
         'invoice_stats': stats,
     }
-    return render(request, 'billing.html', context)
+    return render(request, 'juristic/billing.html', context)
 
     tasks = MaintenanceTask.objects.all().order_by('-created_at')
     stats = {
@@ -254,7 +254,7 @@ def billing_view(request, base_context=None):
         'priority_choices': MaintenanceTask.PRIORITY_CHOICES,
         'status_choices': MaintenanceTask.STATUS_CHOICES,
     }
-    return render(request, 'maintenance_report.html', context)
+    return render(request, 'juristic/maintenance_report.html', context)
 
 
 # risk_management_view removed: merged into maintenance_risk_report_view
@@ -281,4 +281,4 @@ def monthly_report_view(request, base_context=None):
         'reports': reports,
         'report_form': form,
     }
-    return render(request, 'monthly_reports.html', context)
+    return render(request, 'juristic/monthly_reports.html', context)
