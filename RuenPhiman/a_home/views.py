@@ -52,15 +52,23 @@ def role_page_view(request, role, page):
         'ticket': 'Ticket Tracking',
     }
 
+    maintenance_count = MaintenanceTask.objects.count()
     context = {
         'active_tab': page,
-        'page_title': page_titles.get(page, page.title())
+        'page_title': page_titles.get(page, page.title()),
+        'maintenance_count': maintenance_count,
     }
 
+    if page == 'dashboard':
+        return dashboard_view(request, context)
     if page in ['maintenance', 'risk']:
         return maintenance_risk_report_view(request, context)
+    if page == 'users':
+        return user_roles_view(request, context)
     if page == 'report':
         return monthly_report_view(request, context)
+    if page == 'billing':
+        return billing_view(request, context)
 
     return render(request, 'role_layout.html', context)
 
@@ -112,7 +120,104 @@ def maintenance_report_view(request, base_context=None):
     # backward compatibility if called directly
     return maintenance_risk_report_view(request, base_context)
 
+
+@login_required
+def dashboard_view(request, base_context=None):
+    from .models import BillingInvoice, MaintenanceTask
+
     base_context = base_context or {}
+    
+    # Billing summary from database
+    billing_stats = {
+        'paid': BillingInvoice.objects.filter(status='paid').count(),
+        'pending': BillingInvoice.objects.filter(status='pending').count(),
+        'overdue': BillingInvoice.objects.filter(status='overdue').count(),
+    }
+    
+    # Maintenance data from database
+    maintenance_tasks = MaintenanceTask.objects.all().order_by('-created_at')
+    maintenance_stats = {
+        'total': maintenance_tasks.count(),
+        'pending': maintenance_tasks.filter(status='pending').count(),
+        'in_progress': maintenance_tasks.filter(status='in_progress').count(),
+        'high_priority': maintenance_tasks.filter(priority='high').count(),
+    }
+    
+    # Recent incidents (high priority tasks)
+    recent_incidents = MaintenanceTask.objects.filter(priority='high').order_by('-created_at')[:3]
+    
+    # Maintenance schedule
+    maintenance_schedule = [
+        {'task': 'Fire alarm system inspection', 'time': 'Today, 2:00 PM', 'status': 'scheduled'},
+        {'task': 'HVAC filter replacement', 'time': 'Tomorrow, 10:00 AM', 'status': 'scheduled'},
+        {'task': 'Generator maintenance', 'time': 'Feb 10, 2026', 'status': 'scheduled'},
+        {'task': 'Emergency lighting test', 'time': 'Feb 12, 2026', 'status': 'scheduled'},
+    ]
+    
+    context = {
+        **base_context,
+        'billing_stats': billing_stats,
+        'maintenance_stats': maintenance_stats,
+        'recent_incidents': recent_incidents,
+        'maintenance_schedule': maintenance_schedule,
+    }
+    return render(request, 'dashboard.html', context)
+
+
+@login_required
+def user_roles_view(request, base_context=None):
+    from django.contrib.auth.models import User
+    from a_users.models import Profile
+
+    base_context = base_context or {}
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        role = request.POST.get('role')
+        active = request.POST.get('is_active') == 'on'
+        try:
+            user = User.objects.get(pk=user_id)
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.role = role
+            profile.save()
+            user.is_active = active
+            user.save()
+            messages.success(request, 'อัปเดตข้อมูลผู้ใช้เรียบร้อยแล้ว')
+        except User.DoesNotExist:
+            messages.error(request, 'ไม่พบผู้ใช้')
+        return redirect('juristic_page', page='users')
+
+    users = User.objects.select_related('profile').all().order_by('-is_active', 'username')
+
+    role_choices = [('resident', 'ลูกบ้าน'), ('juristic', 'นิติบุคคล'), ('security', 'รปภ.')]
+
+    context = {
+        **base_context,
+        'users': users,
+        'role_choices': role_choices,
+    }
+    return render(request, 'user_roles.html', context)
+
+
+@login_required
+def billing_view(request, base_context=None):
+    from .models import BillingInvoice
+
+    base_context = base_context or {}
+    invoices = BillingInvoice.objects.all()
+    stats = {
+        'total': invoices.count(),
+        'paid': invoices.filter(status='paid').count(),
+        'pending': invoices.filter(status='pending').count(),
+        'overdue': invoices.filter(status='overdue').count(),
+    }
+
+    context = {
+        **base_context,
+        'invoices': invoices,
+        'invoice_stats': stats,
+    }
+    return render(request, 'billing.html', context)
 
     tasks = MaintenanceTask.objects.all().order_by('-created_at')
     stats = {

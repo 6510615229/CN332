@@ -49,3 +49,27 @@ class MonthlyReport(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.month}/{self.year}"
+
+
+class BillingInvoice(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'ค้างชำระ'),
+        ('paid', 'ชำระแล้ว'),
+        ('overdue', 'เลยกำหนด'),
+    )
+
+    unit = models.CharField(max_length=20, verbose_name='ห้อง')
+    tenant_name = models.CharField(max_length=100, verbose_name='ชื่อผู้เช่า')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='จำนวนเงิน')
+    due_date = models.DateField(verbose_name='วันครบกำหนด')
+    paid_date = models.DateField(null=True, blank=True, verbose_name='วันชำระ')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='สถานะ')
+    created_at = models.DateTimeField(default=timezone.now, verbose_name='วันที่สร้าง')
+
+    class Meta:
+        ordering = ['-due_date']
+        verbose_name = 'ใบแจ้งหนี้'
+        verbose_name_plural = 'ใบแจ้งหนี้'
+
+    def __str__(self):
+        return f"{self.unit} - {self.tenant_name} ({self.status})"

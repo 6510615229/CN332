@@ -20,7 +20,7 @@
                 {% if user.profile.role == 'juristic' %}
                     <li><a href="{% url 'juristic_page' 'dashboard' %}" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
                     <li><a href="{% url 'juristic_page' 'users' %}" class="{% if active_tab == 'users' %}highlight{% endif %}">User and Roles</a></li>
-                    <li><a href="{% url 'juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' or active_tab == 'risk' %}highlight{% endif %}">Maintenance and Risk Report</a></li>
+                    <li><a href="{% url 'juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' or active_tab == 'risk' %}highlight{% endif %}">Maintenance and Risk Report <span class="ml-2 text-xs font-semibold bg-indigo-100 px-2 py-1 rounded-full">{{ maintenance_count }}</span></a></li>
                     <li><a href="{% url 'juristic_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                     <li><a href="{% url 'juristic_page' 'report' %}" class="{% if active_tab == 'report' %}highlight{% endif %}">Report</a></li>
                 

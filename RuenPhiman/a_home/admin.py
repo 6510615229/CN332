@@ -15,3 +15,12 @@ class MonthlyReportAdmin(admin.ModelAdmin):
     list_display = ('title', 'month', 'year', 'uploaded_by', 'uploaded_at')
     list_filter = ('year', 'month')
     search_fields = ('title',)
+
+
+from .models import BillingInvoice
+
+@admin.register(BillingInvoice)
+class BillingInvoiceAdmin(admin.ModelAdmin):
+    list_display = ('unit', 'tenant_name', 'amount', 'due_date', 'paid_date', 'status')
+    list_filter = ('status', 'due_date')
+    search_fields = ('unit', 'tenant_name')
