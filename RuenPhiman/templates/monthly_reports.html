@@ -1,0 +1,45 @@
+{% extends 'role_layout.html' %}
+
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-4">Reports & Analytics</h1>
+    <p class="mb-6 text-gray-600">อัปโหลดรายงานประจำเดือนสำหรับฝ่ายนิติและผู้บริหาร</p>
+
+    <div class="mb-6 p-4 border rounded-lg bg-slate-50">
+        <h2 class="font-bold mb-3">Upload Monthly Report</h2>
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ report_form.as_p }}
+            <button type="submit" class="button">Upload Report</button>
+        </form>
+    </div>
+
+    <h2 class="text-xl font-bold mb-3">Existing Reports</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-100 text-sm text-gray-700">
+                    <th class="p-3">Title</th>
+                    <th class="p-3">Month/Year</th>
+                    <th class="p-3">Uploaded By</th>
+                    <th class="p-3">Uploaded At</th>
+                    <th class="p-3">Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ report.title }}</td>
+                    <td class="p-3">{{ report.month }}/{{ report.year }}</td>
+                    <td class="p-3">{{ report.uploaded_by }}</td>
+                    <td class="p-3">{{ report.uploaded_at|date:'Y-m-d H:i' }}</td>
+                    <td class="p-3"><a class="text-indigo-600 hover:underline" href="{{ report.file.url }}" target="_blank">Download</a></td>
+                </tr>
+                {% empty %}
+                <tr><td class="p-3" colspan="5">ยังไม่มีรายงาน</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

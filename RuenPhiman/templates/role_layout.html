@@ -20,7 +20,7 @@
                 {% if user.profile.role == 'juristic' %}
                     <li><a href="{% url 'juristic_page' 'dashboard' %}" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
                     <li><a href="{% url 'juristic_page' 'users' %}" class="{% if active_tab == 'users' %}highlight{% endif %}">User and Roles</a></li>
-                    <li><a href="{% url 'juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' %}highlight{% endif %}">Maintenance Report</a></li>
+                    <li><a href="{% url 'juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' or active_tab == 'risk' %}highlight{% endif %}">Maintenance and Risk Report</a></li>
                     <li><a href="{% url 'juristic_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                     <li><a href="{% url 'juristic_page' 'report' %}" class="{% if active_tab == 'report' %}highlight{% endif %}">Report</a></li>
                 
@@ -42,8 +42,12 @@
 
     <!-- Main Content -->
     <main class="flex-1 p-8">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 min-h-full flex items-center justify-center">
-            <h1 class="text-3xl text-gray-400 font-light">This is a <span class="text-indigo-600 font-bold">{{ page_title }}</span> page</h1>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 min-h-full">
+            {% block content %}
+            <div class="flex items-center justify-center h-full">
+                <h1 class="text-3xl text-gray-400 font-light">This is a <span class="text-indigo-600 font-bold">{{ page_title }}</span> page</h1>
+            </div>
+            {% endblock %}
         </div>
     </main>
 </div>
