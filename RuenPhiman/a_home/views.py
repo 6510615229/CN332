@@ -1,6 +1,7 @@
 # a_home/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from .models import MaintenanceTicket
 
 # ฟังก์ชันตัวช่วย: จัดการกรณี User เก่าที่ role เป็นค่าว่างหรือเกิด Error
 def get_user_role(user):
@@ -39,6 +40,21 @@ def role_page_view(request, role, page):
             return redirect('security_page', page='dashboard')
         else:
             return redirect('resident_page', page='chatbot')
+
+    if request.method == 'POST' and role == 'resident' and page == 'chatbot':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        image = request.FILES.get('image') # รับไฟล์รูปภาพ
+        
+        if title and description:
+            MaintenanceTicket.objects.create(
+                resident=request.user,
+                title=title,
+                description=description,
+                image=image
+            )
+            # เมื่อส่งเสร็จ ให้เด้งไปหน้า Ticket Tracking (งานที่ซอลด้ากำลังทำ) 
+            return redirect('resident_page', page='ticket')
 
     page_titles = {
         'dashboard': 'Dashboard',
