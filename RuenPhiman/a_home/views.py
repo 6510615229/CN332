@@ -1,4 +1,3 @@
-# a_home/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import MaintenanceTicket
@@ -30,9 +29,7 @@ def home_view(request):
 def role_page_view(request, role, page):
     user_role = get_user_role(request.user)
     
-    # ถ้า Role ของ User ไม่ตรงกับ URL ที่พยายามเข้า (เช่น ลูกบ้านพิมพ์ URL เข้าหน้านิติ)
-    # เราจะไม่ส่งกลับไปหน้า home แล้วเพื่อป้องกัน Loop
-    # แต่จะบังคับเตะกลับไปหน้าแรกของ Role ตัวเองแทน
+    # 📌 ดักจับ Role ที่ไม่ถูกต้อง
     if user_role != role:
         if user_role == 'juristic':
             return redirect('juristic_page', page='dashboard')
@@ -41,10 +38,11 @@ def role_page_view(request, role, page):
         else:
             return redirect('resident_page', page='chatbot')
 
-    if request.method == 'POST' and role == 'resident' and page == 'chatbot':
+    # 📌 ดักจับ POST จากหน้า 'repair_form'
+    if request.method == 'POST' and role == 'resident' and page == 'repair_form':
         title = request.POST.get('title')
         description = request.POST.get('description')
-        image = request.FILES.get('image') # รับไฟล์รูปภาพ
+        image = request.FILES.get('image')
         
         if title and description:
             MaintenanceTicket.objects.create(
@@ -53,8 +51,8 @@ def role_page_view(request, role, page):
                 description=description,
                 image=image
             )
-            # เมื่อส่งเสร็จ ให้เด้งไปหน้า Ticket Tracking (งานที่ซอลด้ากำลังทำ) 
-            return redirect('resident_page', page='ticket')
+            # พอบันทึกเสร็จ เด้งไปหน้าติดตามสถานะของซอลด้า
+            return redirect('resident_page', page='ticket') 
 
     page_titles = {
         'dashboard': 'Dashboard',
@@ -66,11 +64,12 @@ def role_page_view(request, role, page):
         'incident': 'Incident Log',
         'chatbot': 'AI Chatbot',
         'ticket': 'Ticket Tracking',
+        'repair_form': 'Repair Form',
     }
 
     context = {
         'active_tab': page,
         'page_title': page_titles.get(page, page.title())
     }
-    #return render(request, 'role_layout.html', context)
+    
     return render(request, f'{role}/{page}.html', context)
