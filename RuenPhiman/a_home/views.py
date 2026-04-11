@@ -72,4 +72,5 @@ def role_page_view(request, role, page):
         'active_tab': page,
         'page_title': page_titles.get(page, page.title())
     }
-    return render(request, 'role_layout.html', context)
+    #return render(request, 'role_layout.html', context)
+    return render(request, f'{role}/{page}.html', context)
