@@ -32,7 +32,7 @@
                 {% else %}
                     <!-- ลูกบ้าน -->
                     <li><a href="{% url 'resident_page' 'chatbot' %}" class="{% if active_tab == 'chatbot' %}highlight{% endif %}">AI Chatbot</a></li>
-                    <li><a href="{% url 'resident_page' 'ticket' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
+                    <li><a href="{% url 'maintenance-tracking' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
                     <li><a href="{% url 'resident_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                 {% endif %}
 

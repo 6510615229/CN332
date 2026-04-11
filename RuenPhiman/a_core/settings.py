@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.line',
     'allauth.socialaccount.providers.facebook',
+    'a_maintenance',
 
     # My apps
     'a_home',
@@ -67,8 +68,10 @@ INSTALLED_APPS = [
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': env('OAUTH_GOOGLE_CLIENT_ID'),
-            'secret': env('OAUTH_GOOGLE_SECRET'),
+            # แก้จากเดิมเป็นแบบนี้
+            'client_id': env('OAUTH_GOOGLE_CLIENT_ID', default='dummy_id'),
+            'client_secret': env('OAUTH_GOOGLE_CLIENT_SECRET', default='dummy_secret'),
+            'key':''
         },
         'SCOPE': {
             'profile',
@@ -81,17 +84,18 @@ SOCIALACCOUNT_PROVIDERS = {
     },
     'github': {
         'APP': {
-            'client_id': env('OAUTH_GITHUB_CLIENT_ID'),
-            'secret': env('OAUTH_GITHUB_SECRET'),
+            'client_id': env('OAUTH_GITHUB_CLIENT_ID', default='dummy'),
+            'client_secret': env('OAUTH_GITHUB_CLIENT_SECRET', default='dummy'),
         },
         'AUTH_PARAMS': {
             'prompt': 'consent',
         }
     },
+    
     'line': {
         'APP': {
-            'client_id': env('OAUTH_LINE_CLIENT_ID'),
-            'secret': env('OAUTH_LINE_SECRET'),
+            'client_id': env('OAUTH_LINE_CLIENT_ID', default='dummy'),
+            'secret': env('OAUTH_LINE_SECRET', default='dummy'),
             'key': ''
         },
         'SCOPE': [
