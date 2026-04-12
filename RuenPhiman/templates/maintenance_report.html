@@ -24,14 +24,54 @@
         </div>
     </div>
 
-    <div class="mb-6 p-4 border rounded-lg bg-slate-50">
-        <h2 class="font-bold mb-3">สร้างงานใหม่</h2>
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {{ task_form.as_p }}
-            <input type="hidden" name="create_task" value="1" />
-            <button type="submit" class="button">Create New Task</button>
-        </form>
+    <div class="mb-6">
+        <details class="border rounded-lg bg-slate-50">
+            <summary class="cursor-pointer px-4 py-3 font-bold text-lg text-slate-800 bg-slate-100 rounded-t-lg">
+                สร้างงานใหม่
+            </summary>
+            <div class="px-4 py-4 space-y-4">
+                <p class="text-sm text-slate-600">คลิกเพื่อขยายแบบฟอร์มสร้างงานใหม่และจัดการงานซ่อมบำรุง</p>
+                <form method="post" novalidate class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700" for="id_title">หัวข้อ</label>
+                        {{ task_form.title }}
+                        {{ task_form.title.errors }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700" for="id_description">รายละเอียด</label>
+                        {{ task_form.description }}
+                        {{ task_form.description.errors }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700" for="id_priority">ลำดับสำคัญ</label>
+                            {{ task_form.priority }}
+                            {{ task_form.priority.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700" for="id_status">สถานะ</label>
+                            {{ task_form.status }}
+                            {{ task_form.status.errors }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700" for="id_due_date">วันที่ครบกำหนด</label>
+                            {{ task_form.due_date }}
+                            {{ task_form.due_date.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700" for="id_assigned_to">มอบหมายให้</label>
+                            {{ task_form.assigned_to }}
+                            {{ task_form.assigned_to.errors }}
+                        </div>
+                    </div>
+                    <input type="hidden" name="create_task" value="1" />
+                    <button type="submit" class="button">Create New Task</button>
+                </form>
+            </div>
+        </details>
     </div>
 
     <h2 class="font-bold text-xl mb-3">Maintenance Tasks</h2>

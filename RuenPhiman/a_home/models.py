@@ -60,10 +60,14 @@ class BillingInvoice(models.Model):
 
     unit = models.CharField(max_length=20, verbose_name='ห้อง')
     tenant_name = models.CharField(max_length=100, verbose_name='ชื่อผู้เช่า')
+    resident = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='billing_invoices', verbose_name='ผู้เช่า')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='จำนวนเงิน')
     due_date = models.DateField(verbose_name='วันครบกำหนด')
     paid_date = models.DateField(null=True, blank=True, verbose_name='วันชำระ')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='สถานะ')
+    payment_proof = models.FileField(upload_to='billing_proofs/', null=True, blank=True, verbose_name='หลักฐานการชำระ')
+    proof_uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='payment_proofs', verbose_name='ผู้ส่งหลักฐาน')
+    proof_uploaded_at = models.DateTimeField(null=True, blank=True, verbose_name='วันที่ส่งหลักฐาน')
     created_at = models.DateTimeField(default=timezone.now, verbose_name='วันที่สร้าง')
 
     class Meta:

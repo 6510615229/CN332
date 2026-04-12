@@ -34,6 +34,8 @@
                     <th class="p-3">Due Date</th>
                     <th class="p-3">Paid Date</th>
                     <th class="p-3">Status</th>
+                    <th class="p-3">Proof</th>
+                    <th class="p-3">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,9 +49,40 @@
                     <td class="p-3">
                         <span class="px-3 py-1 rounded-full text-xs font-semibold {% if invoice.status == 'paid' %}bg-green-100 text-green-700{% elif invoice.status == 'pending' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">{{ invoice.get_status_display }}</span>
                     </td>
+                    <td class="p-3">
+                        {% if invoice.payment_proof %}
+                            <a class="text-indigo-600 hover:underline" href="{{ invoice.payment_proof.url }}" target="_blank">View PDF</a>
+                            <div class="text-xs text-slate-500 mt-1">{{ invoice.proof_uploaded_at|date:'Y-m-d H:i' }}</div>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="p-3">
+                        {% if user_role == 'juristic' %}
+                        <form method="post" class="space-y-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="invoice_id" value="{{ invoice.pk }}" />
+                            <select name="status" class="w-full rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                {% for key, label in status_choices %}
+                                <option value="{{ key }}" {% if invoice.status == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" name="update_status" class="button w-full">Update</button>
+                        </form>
+                        {% elif user_role == 'resident' %}
+                        <form method="post" enctype="multipart/form-data" class="space-y-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="invoice_id" value="{{ invoice.pk }}" />
+                            <input type="file" name="payment_proof" accept="application/pdf" class="block w-full text-sm text-slate-700 rounded-lg border border-slate-300" />
+                            <button type="submit" name="upload_proof" class="button w-full">Upload PDF</button>
+                        </form>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td class="p-3" colspan="6">ไม่มีใบแจ้งหนี้</td></tr>
+                <tr><td class="p-3" colspan="8">ไม่มีใบแจ้งหนี้</td></tr>
                 {% endfor %}
             </tbody>
         </table>
