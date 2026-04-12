@@ -114,7 +114,7 @@ def maintenance_risk_report_view(request, base_context=None):
         'priority_choices': MaintenanceTask.PRIORITY_CHOICES,
         'status_choices': MaintenanceTask.STATUS_CHOICES,
     }
-    return render(request, 'maintenance_report.html', context)
+    return render(request, 'juristic/maintenance_report.html', context)
 
 
 @login_required
@@ -163,7 +163,7 @@ def dashboard_view(request, base_context=None):
         'recent_incidents': recent_incidents,
         'maintenance_schedule': maintenance_schedule,
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'juristic/dashboard.html', context)
 
 
 @login_required
@@ -200,7 +200,7 @@ def user_roles_view(request, base_context=None):
         'users': users,  # Pass users to template
         'role_choices': role_choices,  # Pass role choices to template
     }
-    return render(request, 'user_roles.html', context)  # Render the template
+    return render(request, 'juristic/user_roles.html', context)  # Render the template
 
 
 @login_required
@@ -262,44 +262,7 @@ def billing_view(request, base_context=None):
         'billing_form': BillingProofForm(),
         'user_role': user_role,
     }
-    return render(request, 'billing.html', context)
-
-    tasks = MaintenanceTask.objects.all().order_by('-created_at')
-    stats = {
-        'total': tasks.count(),
-        'completed': tasks.filter(status='completed').count(),
-        'in_progress': tasks.filter(status='in_progress').count(),
-        'urgent': tasks.filter(priority='high').count(),
-    }
-
-    if request.method == 'POST':
-        if 'create_task' in request.POST:
-            form = MaintenanceTaskForm(request.POST)
-            if form.is_valid():
-                task = form.save(commit=False)
-                task.created_by = request.user
-                task.save()
-                messages.success(request, 'สร้างงานใหม่สำเร็จ')
-                return redirect('juristic_page', page='maintenance')
-        elif 'update_task' in request.POST:
-            task = get_object_or_404(MaintenanceTask, pk=request.POST.get('task_id'))
-            task.status = request.POST.get('status', task.status)
-            task.priority = request.POST.get('priority', task.priority)
-            task.save()
-            messages.success(request, 'อัปเดตสถานะงานสำเร็จ')
-            return redirect('juristic_page', page='maintenance')
-    else:
-        form = MaintenanceTaskForm()
-
-    context = {
-        **base_context,
-        'tasks': tasks,
-        'stats': stats,
-        'task_form': form,
-        'priority_choices': MaintenanceTask.PRIORITY_CHOICES,
-        'status_choices': MaintenanceTask.STATUS_CHOICES,
-    }
-    return render(request, 'maintenance_report.html', context)
+    return render(request, 'juristic/billing.html', context)
 
 
 # risk_management_view removed: merged into maintenance_risk_report_view
@@ -326,4 +289,4 @@ def monthly_report_view(request, base_context=None):
         'reports': reports,
         'report_form': form,
     }
-    return render(request, 'monthly_reports.html', context)
+    return render(request, 'juristic/monthly_reports.html', context)
