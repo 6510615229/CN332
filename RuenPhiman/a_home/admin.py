@@ -21,6 +21,6 @@ from .models import BillingInvoice
 
 @admin.register(BillingInvoice)
 class BillingInvoiceAdmin(admin.ModelAdmin):
-    list_display = ('unit', 'tenant_name', 'amount', 'due_date', 'paid_date', 'status')
+    list_display = ('unit', 'tenant_name', 'resident', 'amount', 'due_date', 'paid_date', 'status', 'payment_proof')
     list_filter = ('status', 'due_date')
     search_fields = ('unit', 'tenant_name')
