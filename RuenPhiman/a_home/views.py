@@ -177,12 +177,18 @@ def user_roles_view(request, base_context=None):
         active = request.POST.get('is_active') == 'on'
         try:
             user = User.objects.get(pk=user_id)
-            profile, _ = Profile.objects.get_or_create(user=user)
-            profile.role = role
-            profile.save()
-            user.is_active = active
-            user.save()
-            messages.success(request, 'อัปเดตข้อมูลผู้ใช้เรียบร้อยแล้ว')
+            
+            if user.is_superuser and not active:
+                active = True  # Superusers must always be active
+                messages.warning(request, 'ไม่สามารถเปลี่ยนสถานะของผู้ดูแลระบบได้')
+            
+            else:
+                profile, _ = Profile.objects.get_or_create(user=user)
+                profile.role = role
+                profile.save()
+                user.is_active = active
+                user.save()
+                messages.success(request, 'อัปเดตข้อมูลผู้ใช้เรียบร้อยแล้ว')
         except User.DoesNotExist:
             messages.error(request, 'ไม่พบผู้ใช้')
         return redirect('juristic_page', page='users')
