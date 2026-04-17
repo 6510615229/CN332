@@ -18,11 +18,19 @@
             <ul class="navitems flex flex-col gap-1 px-4">
                 
                 {% if user.profile.role == 'juristic' %}
+<<<<<<< HEAD
                     <li><a href="/juristic/dashboard/" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
                     <li><a href="/juristic/users/" class="{% if active_tab == 'users' %}highlight{% endif %}">User and Roles</a></li>
                     <li><a href="/juristic/maintenance/" class="{% if active_tab == 'maintenance' %}highlight{% endif %}">Maintenance Report</a></li>
                     <li><a href="/juristic/billing/" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                     <li><a href="/juristic/report/" class="{% if active_tab == 'report' %}highlight{% endif %}">Report</a></li>
+=======
+                    <li><a href="{% url 'juristic_page' 'dashboard' %}" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
+                    <li><a href="{% url 'juristic_page' 'users' %}" class="{% if active_tab == 'users' %}highlight{% endif %}">User and Roles</a></li>
+                    <li><a href="{% url 'juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' or active_tab == 'risk' %}highlight{% endif %}">Maintenance and Risk Report <span class="ml-2 text-xs font-semibold bg-indigo-100 px-2 py-1 rounded-full">{{ maintenance_count }}</span></a></li>
+                    <li><a href="{% url 'juristic_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
+                    <li><a href="{% url 'juristic_page' 'report' %}" class="{% if active_tab == 'report' %}highlight{% endif %}">Report</a></li>
+>>>>>>> origin/niti
                 
                 {% elif user.profile.role == 'security' %}
                     <li><a href="/security/dashboard/" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
@@ -42,10 +50,20 @@
 
     <!-- Main Content -->
     <main class="flex-1 p-8">
+<<<<<<< HEAD
         
         {% block content %}
         {% endblock %}
 
+=======
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 min-h-full">
+            {% block content %}
+            <div class="flex items-center justify-center h-full">
+                <h1 class="text-3xl text-gray-400 font-light">This is a <span class="text-indigo-600 font-bold">{{ page_title }}</span> page</h1>
+            </div>
+            {% endblock %}
+        </div>
+>>>>>>> origin/niti
     </main>
 </div>
 {% endblock %}
