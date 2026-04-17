@@ -1,0 +1,51 @@
+{% extends 'role_layout.html' %}
+
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-4">User and Roles</h1>
+    <p class="mb-6 text-gray-600">จัดการสิทธิ์ผู้ใช้งานทั้งหมด</p>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-100 text-sm text-gray-700">
+                    <th class="p-3">Username</th>
+                    <th class="p-3">Email</th>
+                    <th class="p-3">Role</th>
+                    <th class="p-3">Active</th>
+                    <th class="p-3">Last Login</th>
+                    <th class="p-3">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="border-b hover:bg-slate-50">
+                    <form method="post" class="w-full grid grid-cols-6 gap-2 items-center">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}" />
+                        <td class="p-3">{{ user.username }}</td>
+                        <td class="p-3">{{ user.email }}</td>
+                        <td class="p-3">
+                            <select name="role" class="w-full rounded-lg bg-gray-100 py-2 px-3">
+                                {% for key, label in role_choices %}
+                                <option value="{{ key }}" {% if user.profile.role == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="p-3 text-center">
+                            <input type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %} />
+                        </td>
+                        <td class="p-3">{{ user.last_login|date:'Y-m-d H:i'|default:'-' }}</td>
+                        <td class="p-3">
+                            <button type="submit" class="button">Update</button>
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr><td class="p-3" colspan="6">ไม่พบผู้ใช้</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

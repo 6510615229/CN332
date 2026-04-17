@@ -1,27 +1,29 @@
-#a_users/adapters.py
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.account.models import EmailAddress
-from django.shortcuts import resolve_url
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     def get_signup_redirect_url(self, request):
-        return resolve_url("profile-onboarding")
+        # เปลี่ยนเป็น hardcoded URL
+        return '/profile/onboarding/'
     
     def get_login_redirect_url(self, request):
         user = request.user
-        if hasattr(user, 'profile'):
+        # 🆕 แก้ indentation (ย่อหน้าให้ถูกต้อง)
+        try:
             role = user.profile.role
             if role == 'juristic':
-                return resolve_url('juristic_page', page='dashboard')
+                return '/juristic/dashboard/'
             elif role == 'security':
-                return resolve_url('security_page', page='dashboard')
+                return '/security/dashboard/'
             else:
-                return resolve_url('resident_page', page='chatbot')
-        return resolve_url('home')
+                return '/resident/chatbot/'
+        except:
+            return '/resident/chatbot/'
+
     
     
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
