@@ -1,23 +1,18 @@
 from django.contrib import admin
+from .models import MaintenanceRequest, BillingInvoice, MonthlyReport
 
-from .models import MaintenanceTask, MonthlyReport
-
-
-@admin.register(MaintenanceTask)
-class MaintenanceTaskAdmin(admin.ModelAdmin):
-    list_display = ('title', 'status', 'priority', 'assigned_to', 'created_by', 'due_date', 'created_at')
+@admin.register(MaintenanceRequest)
+class MaintenanceRequestAdmin(admin.ModelAdmin):
+    # พี่แก้ created_by เป็น resident ให้ตรงกับ Model จริงๆ เพื่อกัน Error ครับ
+    list_display = ('title', 'status', 'priority', 'assigned_to', 'resident', 'due_date', 'created_at')
     list_filter = ('status', 'priority')
     search_fields = ('title', 'description')
-
 
 @admin.register(MonthlyReport)
 class MonthlyReportAdmin(admin.ModelAdmin):
     list_display = ('title', 'month', 'year', 'uploaded_by', 'uploaded_at')
     list_filter = ('year', 'month')
     search_fields = ('title',)
-
-
-from .models import BillingInvoice
 
 @admin.register(BillingInvoice)
 class BillingInvoiceAdmin(admin.ModelAdmin):

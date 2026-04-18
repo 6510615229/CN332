@@ -8,7 +8,14 @@ from .models import MaintenanceRequest
 def tracking_view(request):
     # ดึงเฉพาะรายการแจ้งซ่อมของคนที่ล็อกอินอยู่
     tickets = MaintenanceRequest.objects.filter(resident=request.user).order_by('-id')
-    return render(request, 'a_maintenance/tracking.html', {'tickets': tickets})
+    
+    #สร้าง context เพื่อส่งตัวแปรไปให้ HTML
+    context = {
+        'requests': tickets,  # เปลี่ยน key เป็น 'requests' ให้ตรงกับใน HTML
+        'active_tab': 'ticket', # ใส่เพื่อให้เมนู Sidebar ติดไฮไลต์สี
+    }
+    
+    return render(request, 'a_maintenance/tracking.html', context)
 
 # 2. หน้าแบบฟอร์มและการส่งข้อมูล (Submit)
 @login_required

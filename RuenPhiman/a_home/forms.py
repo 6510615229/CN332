@@ -1,86 +1,41 @@
 from django import forms
-<<<<<<< HEAD
-from .models import MaintenanceTicket, BillingInvoice, MonthlyReport
-
-class MaintenanceTaskForm(forms.ModelForm):
-    class Meta:
-        model = MaintenanceTicket
-        fields = ['title', 'description', 'priority', 'assigned_to', 'due_date', 'status']
-        widgets = {
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
-        }
-
-class BillingProofForm(forms.Form):
-    invoice_id = forms.IntegerField(widget=forms.HiddenInput)
-    payment_proof = forms.FileField(
-        label='หลักฐานการชำระเงิน',
-        widget=forms.FileInput(attrs={'accept': 'image/*,application/pdf'})
-    )
-
-class MonthlyReportForm(forms.ModelForm):
-    class Meta:
-        model = MonthlyReport
-        fields = ['title', 'file', 'month', 'year']
-        widgets = {
-            'month': forms.NumberInput(attrs={'min': 1, 'max': 12}),
-            'year': forms.NumberInput(attrs={'min': 2020, 'max': 2030}),
-        }
-=======
-
-from .models import MaintenanceTask, MonthlyReport
-
-
-class MaintenanceTaskForm(forms.ModelForm):
-    class Meta:
-        model = MaintenanceTask
-        fields = ['title', 'description', 'priority', 'status', 'due_date', 'assigned_to']
-        widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-            'description': forms.Textarea(attrs={
-                'rows': 2,
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-            'priority': forms.Select(attrs={
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-            'status': forms.Select(attrs={
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-            'due_date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-            'assigned_to': forms.Select(attrs={
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-        }
-
-
+from .models import MaintenanceRequest, BillingInvoice, MonthlyReport
 from datetime import date
 
+# สไตล์ส่วนกลางสำหรับ Input
+INPUT_CLASSES = 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500'
+
+class MaintenanceTaskForm(forms.ModelForm):
+    class Meta:
+        model = MaintenanceRequest
+        fields = ['title', 'description', 'priority', 'status', 'due_date', 'assigned_to']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': INPUT_CLASSES}),
+            'priority': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'status': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': INPUT_CLASSES}),
+            'assigned_to': forms.Select(attrs={'class': INPUT_CLASSES}),
+        }
 
 class BillingProofForm(forms.Form):
     invoice_id = forms.IntegerField(widget=forms.HiddenInput())
     payment_proof = forms.FileField(
-        label='Upload PDF',
+        label='หลักฐานการชำระเงิน (รูปภาพ หรือ PDF)',
         widget=forms.ClearableFileInput(attrs={
             'class': 'mt-1 block w-full text-sm text-slate-700',
-            'accept': 'application/pdf',
+            'accept': 'image/*,application/pdf', # รับทั้งรูปและ PDF ตามที่คุณต้องการ
         })
     )
 
-
 class MonthlyReportForm(forms.ModelForm):
+    # รวม Month และ Year เป็น Field เดียวเพื่อให้เลือกง่ายแบบปฏิทิน
     report_month = forms.DateField(
         required=True,
-        label='Month/Year',
-        input_formats=['%Y-%m'],
+        label='ประจำเดือน/ปี',
         widget=forms.DateInput(attrs={
             'type': 'month',
-            'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
+            'class': INPUT_CLASSES,
         }),
     )
 
@@ -88,16 +43,13 @@ class MonthlyReportForm(forms.ModelForm):
         model = MonthlyReport
         fields = ['title', 'file', 'report_month']
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
-            }),
-            'file': forms.ClearableFileInput(attrs={
-                'class': 'mt-1 block w-full text-sm text-slate-700',
-            }),
+            'title': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+            'file': forms.ClearableFileInput(attrs={'class': 'mt-1 block w-full text-sm text-slate-700'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # ถ้าเป็นการแก้ไขข้อมูล ให้ดึงค่า Month/Year เดิมมาแสดง
         if self.instance and self.instance.pk and self.instance.month and self.instance.year:
             self.initial['report_month'] = date(self.instance.year, self.instance.month, 1)
 
@@ -107,4 +59,3 @@ class MonthlyReportForm(forms.ModelForm):
             self.instance.month = report_month.month
             self.instance.year = report_month.year
         return super().save(commit=commit)
->>>>>>> origin/niti
