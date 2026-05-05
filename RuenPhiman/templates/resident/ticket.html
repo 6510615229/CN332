@@ -1,6 +1,8 @@
 {% extends 'role_layout.html' %}
 
 {% block content %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
 <div class="max-w-2xl mx-auto p-6 bg-gray-50 rounded-xl shadow-md">
     <h2 class="text-2xl font-bold mb-8 text-center text-gray-800">ติดตามสถานะการแจ้งซ่อม</h2>
 
@@ -46,7 +48,7 @@
         {% elif req.status == 'waiting_payment' %}
             <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
                 <p class="text-orange-800 font-bold mb-2">โปรดชำระค่าบริการ: {{ req.cost }} บาท</p>
-                <form action="{% url 'upload-slip' req.id %}" method="POST" enctype="multipart/form-data" class="space-y-2 flex items-center gap-3">
+                <form action="{% url 'a_home:upload_slip' req.id %}" method="POST" enctype="multipart/form-data" class="space-y-2 flex items-center gap-3">
                     {% csrf_token %}
                     <input type="file" name="slip_image" required class="text-sm">
                     <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 text-sm">ส่งสลิป</button>
@@ -57,12 +59,15 @@
             <p class="text-orange-600 font-bold text-center">กำลังตรวจสอบยอดชำระเงิน...</p>
 
         {% elif req.status == 'completed' %}
-            <p class="text-green-600 font-bold text-center">✅ เสร็จสมบูรณ์แล้ว ขอบคุณที่ใช้บริการ</p>
+            <p class="text-green-600 font-bold text-center"> เสร็จสมบูรณ์แล้ว ขอบคุณที่ใช้บริการ</p>
         {% endif %}
 
     </div>
     {% empty %}
-    <p class="text-center text-gray-400">ยังไม่มีประวัติการแจ้งซ่อมในขณะนี้</p>
+    <div class="text-center py-10">
+        <p class="text-gray-400">ยังไม่มีประวัติการแจ้งซ่อมในขณะนี้</p>
+        <a href="{% url 'a_home:resident_page' page='repair_form' %}" class="text-indigo-600 underline mt-2 inline-block">ไปหน้าแจ้งซ่อม</a>
+    </div>
     {% endfor %}
 </div>
 {% endblock %}

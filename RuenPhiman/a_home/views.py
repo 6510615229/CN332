@@ -4,20 +4,26 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.conf import settings
+import json
+import google.generativeai as genai
+from groq import Groq
 
-# เรียกใช้ Model 
+# เรียกใช้ Model และ Form
 from .models import BillingInvoice, MonthlyReport
 from a_maintenance.models import MaintenanceRequest
 from .forms import MaintenanceTaskForm, MonthlyReportForm, BillingProofForm
 from a_users.models import Profile
-from .models import BillingInvoice
 
+# --- Helper Functions ---
 def get_user_role(user):
     try:
         return user.profile.role
     except:
         return 'resident'
 
+# --- Main Views ---
 def home_view(request):
     if request.user.is_authenticated:
         role = get_user_role(request.user)
@@ -57,6 +63,7 @@ def role_page_view(request, role, page):
                 status='pending'
             )
             messages.success(request, 'ส่งเรื่องแจ้งซ่อมเรียบร้อยแล้ว!')
+            # ใช้ redirect ไปที่หน้า ticket เพื่อล้าง POST data และโหลดข้อมูลใหม่
             return redirect('a_home:resident_page', page='ticket')
 
     page_titles = {
@@ -78,35 +85,35 @@ def role_page_view(request, role, page):
         'user_role': user_role,
     }
     
-    # Routing ไปยัง View ย่อยตาม Page
+    # --- เพิ่มส่วนนี้: ดึงข้อมูลคำขอแจ้งซ่อมสำหรับหน้า ticket ---
+    if role == 'resident' and page == 'ticket':
+        # ดึงข้อมูล MaintenanceRequest ของ user คนนี้ เรียงจากใหม่ไปเก่า (-created_at)
+        # ใช้ชื่อตัวแปร 'requests' ให้ตรงกับในไฟล์ HTML
+        base_context['requests'] = MaintenanceRequest.objects.filter(resident=request.user).order_by('-created_at')
+
+    # Routing ไปยัง View ย่อยตาม Page สำหรับ Juristic
     if user_role == 'juristic':
-        if page == 'dashboard':
-            return dashboard_view(request, base_context)
-        elif page in ['maintenance', 'risk']:
-            return maintenance_risk_report_view(request, base_context)
-        elif page == 'users':
-            return user_roles_view(request, base_context)
-        elif page == 'billing':
-            return billing_view(request, base_context)
-        elif page == 'report':
-            return monthly_report_view(request, base_context)
+        if page == 'dashboard': return dashboard_view(request, base_context)
+        elif page in ['maintenance', 'risk']: return maintenance_risk_report_view(request, base_context)
+        elif page == 'users': return user_roles_view(request, base_context)
+        elif page == 'billing': return billing_view(request, base_context)
+        elif page == 'report': return monthly_report_view(request, base_context)
     
-    # แก้ไขใหม่
     if user_role == 'resident' and page == 'billing':
-        return billing_view(request) # <--- เอา base_context ออก
+        return billing_view(request)
 
-    return render(request, f'{role}/{page}.html', base_context)
-
+    # ส่ง response พร้อมตั้งค่าไม่ให้เก็บ Cache เพื่อให้ข้อมูลอัปเดตเสมอ
+    response = render(request, f'{role}/{page}.html', base_context)
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response
 @login_required
 def dashboard_view(request, base_context=None):
     base_context = base_context or {}
-    
     billing_stats = {
         'paid': BillingInvoice.objects.filter(status='paid').count(),
         'pending': BillingInvoice.objects.filter(status='pending').count(),
         'overdue': BillingInvoice.objects.filter(status='overdue').count(),
     }
-
     tasks = MaintenanceRequest.objects.all().order_by('-created_at')
     maintenance_stats = {
         'total': tasks.count(),
@@ -114,43 +121,25 @@ def dashboard_view(request, base_context=None):
         'in_progress': tasks.filter(status='in_progress').count(),
         'high_priority': tasks.filter(priority='high').count(),
     }
-
     recent_incidents = tasks.filter(priority='high')[:3]
-
-    context = {
-        **base_context,
-        'billing_stats': billing_stats,
-        'maintenance_stats': maintenance_stats,
-        'recent_incidents': recent_incidents,
-    }
+    context = {**base_context, 'billing_stats': billing_stats, 'maintenance_stats': maintenance_stats, 'recent_incidents': recent_incidents}
     return render(request, 'juristic/dashboard.html', context)
 
 @login_required
 def maintenance_risk_report_view(request, base_context=None):
     base_context = base_context or {}
     tasks = MaintenanceRequest.objects.all().order_by('-created_at')
-    
     if request.method == 'POST':
         if 'update_task' in request.POST:
             task = get_object_or_404(MaintenanceRequest, pk=request.POST.get('task_id'))
             task.status = request.POST.get('status', task.status)
             task.priority = request.POST.get('priority', task.priority)
-            
             assigned_id = request.POST.get('assigned_to')
-            if assigned_id:
-                task.assigned_to_id = assigned_id
-            
+            if assigned_id: task.assigned_to_id = assigned_id
             task.save()
             messages.success(request, 'อัปเดตข้อมูลงานซ่อมสำเร็จ')
             return redirect('a_home:juristic_page', page='maintenance')
-
-    context = {
-        **base_context,
-        'tasks': tasks,
-        'status_choices': MaintenanceRequest.STATUS_CHOICES,
-        'priority_choices': MaintenanceRequest.PRIORITY_CHOICES,
-        'staff_users': User.objects.filter(is_staff=True) # สำหรับมอบหมายงาน
-    }
+    context = {**base_context, 'tasks': tasks, 'status_choices': MaintenanceRequest.STATUS_CHOICES, 'priority_choices': MaintenanceRequest.PRIORITY_CHOICES, 'staff_users': User.objects.filter(is_staff=True)}
     return render(request, 'juristic/maintenance_report.html', context)
 
 @login_required
@@ -160,11 +149,8 @@ def user_roles_view(request, base_context=None):
         user_id = request.POST.get('user_id')
         new_role = request.POST.get('role')
         active = request.POST.get('is_active') == 'on'
-        
         user = get_object_or_404(User, pk=user_id)
-        if user.is_superuser:
-            messages.warning(request, 'ไม่สามารถเปลี่ยนสิทธิ์ Superuser ได้')
-        else:
+        if not user.is_superuser:
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.role = new_role
             profile.save()
@@ -172,98 +158,38 @@ def user_roles_view(request, base_context=None):
             user.save()
             messages.success(request, f'อัปเดต {user.username} สำเร็จ')
         return redirect('a_home:juristic_page', page='users')
-
-    context = {
-        **base_context,
-        'users': User.objects.select_related('profile').all().order_by('-is_active'),
-        'role_choices': [('resident', 'ลูกบ้าน'), ('juristic', 'นิติบุคคล'), ('security', 'รปภ.')],
-    }
+    context = {**base_context, 'users': User.objects.select_related('profile').all().order_by('-is_active'), 'role_choices': [('resident', 'ลูกบ้าน'), ('juristic', 'นิติบุคคล'), ('security', 'รปภ.')]}
     return render(request, 'juristic/user_roles.html', context)
 
 @login_required
 def billing_view(request, *args, **kwargs):
-    # 1. ตรวจสอบ Role (เช็กจาก URL)
-    if 'juristic' in request.path:
-        role = 'juristic'
-    else:
-        role = 'resident'
-
-    # 2. ส่วนของ POST (จัดการส่งข้อมูล)
+    role = 'juristic' if 'juristic' in request.path else 'resident'
     if request.method == 'POST':
-        # --- นิติบุคคล: ออกบิลใหม่ ---
         if 'create_invoice' in request.POST:
-            unit = request.POST.get('unit')
-            resident_id = request.POST.get('resident_id')
-            amount = request.POST.get('amount')
-            due_date = request.POST.get('due_date')
-            
+            unit, resident_id, amount, due_date = request.POST.get('unit'), request.POST.get('resident_id'), request.POST.get('amount'), request.POST.get('due_date')
             resident_user = get_object_or_404(User, id=resident_id)
-            
-            BillingInvoice.objects.create(
-                unit=unit,
-                resident=resident_user,
-                tenant_name=resident_user.get_full_name() or resident_user.username,
-                amount=amount,
-                due_date=due_date,
-                status='pending'
-            )
+            BillingInvoice.objects.create(unit=unit, resident=resident_user, tenant_name=resident_user.get_full_name() or resident_user.username, amount=amount, due_date=due_date, status='pending')
             messages.success(request, f'ออกบิลให้ห้อง {unit} เรียบร้อย!')
-            return redirect(request.path)
-
-        # --- นิติบุคคล: อัปเดตสถานะ (ปุ่ม Update) ---
         elif 'update_status' in request.POST:
-            invoice_id = request.POST.get('invoice_id')
-            new_status = request.POST.get('status')
-            invoice = get_object_or_404(BillingInvoice, pk=invoice_id)
-            invoice.status = new_status
-            if new_status == 'paid':
-                invoice.paid_date = timezone.now().date()
+            invoice = get_object_or_404(BillingInvoice, pk=request.POST.get('invoice_id'))
+            invoice.status = request.POST.get('status')
+            if invoice.status == 'paid': invoice.paid_date = timezone.now().date()
             invoice.save()
-            messages.success(request, f'อัปเดตสถานะห้อง {invoice.unit} สำเร็จ')
-            return redirect(request.path)
-
-        # --- ลูกบ้าน: อัปโหลดสลิป (ปุ่ม Pay) ---
         elif 'upload_proof' in request.POST:
-            invoice_id = request.POST.get('invoice_id')
-            invoice = get_object_or_404(BillingInvoice, pk=invoice_id, resident=request.user)
+            invoice = get_object_or_404(BillingInvoice, pk=request.POST.get('invoice_id'), resident=request.user)
             slip = request.FILES.get('payment_proof')
             if slip:
-                invoice.payment_proof = slip
-                invoice.proof_uploaded_at = timezone.now()
-                invoice.status = 'pending' 
+                invoice.payment_proof, invoice.proof_uploaded_at, invoice.status = slip, timezone.now(), 'pending'
                 invoice.save()
-                messages.success(request, 'อัปโหลดสลิปเรียบร้อย รอตรวจสอบครับ')
-            return redirect(request.path)
+        return redirect(request.path)
 
-    #3. ส่วนของ GET (ดึงข้อมูลมาแสดงผล)
-    resident_users = None
-    if role == 'juristic':
-        invoices = BillingInvoice.objects.all().order_by('-id')
-        resident_users = User.objects.filter(is_staff=False) # ดึงรายชื่อลูกบ้านมาใส่ Dropdown
-    else:
-        invoices = BillingInvoice.objects.filter(resident=request.user).order_by('-id')
-
-    # จัดเตรียมข้อมูลส่งไปที่ HTML
+    invoices = BillingInvoice.objects.all().order_by('-id') if role == 'juristic' else BillingInvoice.objects.filter(resident=request.user).order_by('-id')
     context = {
-        'invoices': invoices,
-        'invoice_stats': {
-            'total': invoices.count(),
-            'paid': invoices.filter(status='paid').count(),
-            'pending': invoices.filter(status='pending').count(),
-            'overdue': invoices.filter(status='overdue').count(),
-        },
-        'user_role': role,
-        'status_choices': BillingInvoice.STATUS_CHOICES,
-        'active_tab': 'billing',
-        'resident_users': resident_users,
-        'page_title': 'ระบบบัญชีและการเงิน',
+        'invoices': invoices, 'user_role': role, 'status_choices': BillingInvoice.STATUS_CHOICES, 'active_tab': 'billing',
+        'resident_users': User.objects.filter(is_staff=False) if role == 'juristic' else None, 'page_title': 'ระบบบัญชีและการเงิน'
     }
+    return render(request, f'{role}/billing.html', context)
 
-    # เลือกโฟลเดอร์ไฟล์ตาม Role
-    template_name = f'{role}/billing.html'
-    
-    return render(request, template_name, context)
-    
 @login_required
 def monthly_report_view(request, base_context=None):
     base_context = base_context or {}
@@ -273,12 +199,70 @@ def monthly_report_view(request, base_context=None):
             report = form.save(commit=False)
             report.uploaded_by = request.user
             report.save()
-            messages.success(request, 'เพิ่มรายงานสำเร็จ')
             return redirect('a_home:juristic_page', page='report')
-    
-    context = {
-        **base_context,
-        'reports': MonthlyReport.objects.all().order_by('-year', '-month'),
-        'report_form': MonthlyReportForm(),
-    }
+    context = {**base_context, 'reports': MonthlyReport.objects.all().order_by('-year', '-month'), 'report_form': MonthlyReportForm()}
     return render(request, 'juristic/monthly_reports.html', context)
+
+# --- AI Chatbot Section ---
+@login_required
+def chat_room(request):
+    return render(request, 'resident/chat_room.html')
+
+@login_required
+def chatbot_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+
+            api_key = getattr(settings, 'GROQ_API_KEY', None)
+            client = Groq(api_key=api_key)
+
+            # --- ส่วนที่เพิ่ม/แก้ไข: สอน AI ให้รู้จักลิงก์ในเว็บ ---
+            system_instructions = """
+            คุณคือ 'น้องรื่นรมย์' AI ผู้ช่วยประจำคอนโด RuenPhiman 
+            หน้าที่ของคุณคือช่วยเหลือลูกบ้านและนำทางไปยังส่วนต่างๆ โดยใช้ลิงก์ด้านล่างนี้เท่านั้น:
+            
+            1. หน้าแจ้งซ่อม (Repair Form): /resident/repair_form/
+            2. ตรวจสอบสถานะงานซ่อม (Repair Status): /resident/ticket/
+            3. ตรวจสอบบิลและค่ายอดค้างชำระ (Billing): /resident/billing/
+            
+            คำแนะนำในการตอบ:
+            - หากลูกบ้านอยากแจ้งซ่อม ให้ส่งลิงก์หน้าแจ้งซ่อม
+            - หากลูกบ้านถามเรื่องยอดค้างชำระ หรืออยากจ่ายเงิน ให้ส่งลิงก์หน้าบิล
+            - หากถามเรื่องงานซ่อมที่เคยแจ้งไว้ ให้ส่งลิงก์หน้าสถานะงานซ่อม
+            - ให้ตอบในรูปแบบ Markdown เช่น [คลิกที่นี่เพื่อแจ้งซ่อม](/resident/repair_form/)
+            - ตอบเป็นภาษาไทยอย่างสุภาพและเป็นกันเอง
+            """
+
+            completion = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {"role": "system", "content": system_instructions},
+                    {"role": "user", "content": user_message}
+                ],
+                temperature=0.7,
+            )
+
+            reply_text = completion.choices[0].message.content
+            return JsonResponse({'reply': reply_text})
+
+        except Exception as e:
+            return JsonResponse({'reply': f'เกิดข้อผิดพลาด: {str(e)}'})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def upload_slip_view(request, request_id):
+    if request.method == 'POST':
+        maintenance_request = get_object_or_404(MaintenanceRequest, id=request_id, resident=request.user)
+        slip_image = request.FILES.get('slip_image')
+        
+        if slip_image:
+            # สมมติว่าใน Model MaintenanceRequest มีฟิลด์ชื่อ slip_image และ status
+            maintenance_request.image = slip_image # หรือฟิลด์สำหรับเก็บสลิปโดยเฉพาะ
+            maintenance_request.status = 'verifying' # เปลี่ยนสถานะเป็น "กำลังตรวจสอบ"
+            maintenance_request.save()
+            messages.success(request, 'ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว!')
+        
+        return redirect('a_home:resident_page', page='ticket')

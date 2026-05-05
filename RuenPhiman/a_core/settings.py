@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import environ
+
+
 
 from environ import Env
 env = Env()
@@ -19,6 +23,9 @@ env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ตั้งค่าให้อ่านไฟล์ .env
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Project title displayed in the header
 PROJECT_TITLE = "Project Title"
@@ -222,3 +229,9 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_ADAPTER = 'a_users.adapters.CustomAccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'a_users.adapters.SocialAccountAdapter'
+
+
+
+# ตัวแปรสำหรับใช้งาน Gemini API ในโปรเจกต์
+# a_core/settings.py
+GROQ_API_KEY = env('GROQ_API_KEY')
