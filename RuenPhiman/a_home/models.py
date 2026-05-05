@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.conf import settings
+
 
 # 1. ระบบแจ้งซ่อม (รวมจาก MaintenanceTicket และ MaintenanceTask)
 class MaintenanceRequest(models.Model):

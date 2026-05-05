@@ -1,0 +1,99 @@
+{% extends 'role_layout.html' %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+    /* ปรับแต่งสไตล์ของลิงก์ที่ AI ส่งมา */
+    .prose a {
+        color: #2563eb;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+    .prose a:hover {
+        color: #1e40af;
+    }
+</style>
+
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">น้องรื่นรมย์ (AI Assistant)</h1>
+            <p class="text-gray-500 text-sm">ยินดีที่ได้ดูแลลูกบ้าน RuenPhiman ค่ะ</p>
+        </div>
+        <a href="javascript:history.back()" class="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+            &larr; กลับ
+        </a>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden flex flex-col" style="height: 550px;">
+        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-4 bg-indigo-50">
+            <div class="flex justify-start">
+                <div class="bg-white border border-gray-200 text-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]">
+                    สวัสดีค่ะ มีอะไรให้น้องรื่นรมย์ช่วยดูแลวันนี้ไหมคะ ✨
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 bg-white border-t border-gray-200">
+            <div class="flex gap-2">
+                <input type="text" id="user-input" class="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="พิมพ์ข้อความที่นี่...">
+                <button onclick="sendMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md">
+                    ส่ง
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function sendMessage() {
+    const inputField = document.getElementById('user-input');
+    const message = inputField.value.trim();
+    const chatBox = document.getElementById('chat-box');
+
+    if (!message) return;
+
+    // แสดงข้อความของผู้ใช้
+    chatBox.innerHTML += `
+        <div class="flex justify-end">
+            <div class="bg-indigo-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]">${message}</div>
+        </div>
+    `;
+    inputField.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const response = await fetch("{% url 'a_home:chatbot_api' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+
+        // แปลง Markdown จาก AI ให้เป็น HTML ลิงก์
+        const formattedReply = marked.parse(data.reply);
+
+        // แสดงข้อความจาก AI
+        chatBox.innerHTML += `
+            <div class="flex justify-start">
+                <div class="bg-white border border-gray-200 text-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm max-w-[80%] prose">
+                    ${formattedReply}
+                </div>
+            </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (error) {
+        chatBox.innerHTML += `<p class="text-center text-red-500 text-xs mt-2">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>`;
+    }
+}
+
+document.getElementById("user-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+});
+</script>
+{% endblock %}
