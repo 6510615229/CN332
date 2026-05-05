@@ -1,0 +1,35 @@
+{% extends 'role_layout.html' %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 max-w-2xl mx-auto mt-10">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">📝 ฟอร์มแจ้งซ่อมแซมส่วนกลาง</h1>
+    
+    <form method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
+        {% csrf_token %}
+
+        <div>
+            <label for="title" class="block text-gray-700 font-bold mb-2">หัวข้อปัญหา</label>
+            <input type="text" id="title" name="title" placeholder="เช่น แอร์ไม่เย็น, ท่อน้ำรั่ว" 
+                   class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-indigo-500" required>
+        </div>
+
+        <div>
+            <label for="description" class="block text-gray-700 font-bold mb-2">รายละเอียดเพิ่มเติม</label>
+            <textarea id="description" name="description" rows="4" placeholder="อธิบายปัญหาที่พบ..." 
+                      class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-indigo-500" required></textarea>
+        </div>
+
+        <div>
+            <label for="image" class="block text-gray-700 font-bold mb-2">แนบรูปถ่ายปัญหา (ถ้ามี)</label>
+            <input type="file" id="image" name="image" 
+                   class="w-full bg-white text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        </div>
+
+        <div class="mt-4 flex gap-4">
+            <button type="submit" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-indigo-700 transition-colors w-full">
+                ส่งเรื่องแจ้งซ่อม
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

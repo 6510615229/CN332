@@ -1,0 +1,96 @@
+{% extends 'role_layout.html' %}
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-4">Billing Management</h1>
+    
+    <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Total Invoices</div>
+            <div class="text-3xl font-bold">{{ invoice_stats.total }}</div>
+        </div>
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Paid</div>
+            <div class="text-3xl font-bold text-green-600">{{ invoice_stats.paid }}</div>
+        </div>
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Pending</div>
+            <div class="text-3xl font-bold text-yellow-600">{{ invoice_stats.pending }}</div>
+        </div>
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Overdue</div>
+            <div class="text-3xl font-bold text-red-600">{{ invoice_stats.overdue }}</div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 text-sm text-gray-600 border-b">
+                    <th class="p-4">Unit</th>
+                    <th class="p-4">Tenant</th>
+                    <th class="p-4">Amount</th>
+                    <th class="p-4">Due Date</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Proof</th>
+                    <th class="p-4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                    <td class="p-4 font-medium">{{ invoice.unit }}</td>
+                    <td class="p-4">{{ invoice.tenant_name }}</td>
+                    <td class="p-4 font-bold text-gray-700">{{ invoice.amount|floatformat:2 }} ฿</td>
+                    <td class="p-4 text-sm text-gray-500">{{ invoice.due_date|date:'d M Y' }}</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                            {% if invoice.status == 'paid' %}bg-green-100 text-green-700
+                            {% elif invoice.status == 'pending' %}bg-yellow-100 text-yellow-700
+                            {% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ invoice.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        {% if invoice.payment_proof %}
+                            <a href="{{ invoice.payment_proof.url }}" target="_blank" class="text-blue-600 hover:underline text-sm font-medium flex items-center gap-1">
+                                View Slip
+                            </a>
+                            <div class="text-[10px] text-gray-400 mt-1">{{ invoice.proof_uploaded_at|date:'d/m/y H:i' }}</div>
+                        {% else %}
+                            <span class="text-gray-300 text-sm">- No slip -</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4">
+                        {% if user_role == 'juristic' %}
+                            <form method="post" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="invoice_id" value="{{ invoice.pk }}">
+                                <select name="status" class="text-xs border rounded-lg p-1 bg-white focus:ring-2 focus:ring-blue-500">
+                                    {% for key, label in status_choices %}
+                                        <option value="{{ key }}" {% if invoice.status == key %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" name="update_status" class="bg-blue-600 text-white p-1 px-2 rounded text-xs hover:bg-blue-700">Update</button>
+                            </form>
+                        {% elif user_role == 'resident' and invoice.status != 'paid' %}
+                            <form method="post" enctype="multipart/form-data" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="invoice_id" value="{{ invoice.pk }}">
+                                <input type="file" name="payment_proof" accept="image/*" class="text-[10px] w-32 border rounded p-1" required>
+                                <button type="submit" name="upload_proof" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 font-bold">Pay</button>
+                            </form>
+                        {% else %}
+                            <span class="text-gray-400 text-xs">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-8 text-center text-gray-400 italic">ไม่มีข้อมูลใบแจ้งหนี้ในขณะนี้</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

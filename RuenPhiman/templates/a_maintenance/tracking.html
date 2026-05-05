@@ -1,0 +1,66 @@
+{% extends 'role_layout.html' %}  {% block content %}
+<div class="max-w-2xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-8 text-center text-gray-800">ติดตามสถานะการแจ้งซ่อม</h2>
+
+    {% for req in requests %}
+    <div class="bg-white p-6 rounded-lg mb-6 shadow-sm border-l-4 
+        {% if req.status == 'pending' %} border-yellow-400 
+        {% elif req.status == 'in_progress' %} border-blue-500 
+        {% elif req.status == 'completed' %} border-green-500 
+        {% else %} border-gray-400 {% endif %}">
+        
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <span class="text-xs font-bold uppercase px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                    Ticket #{{ req.id }}
+                </span>
+                <h3 class="text-xl font-bold mt-2">{{ req.title }}</h3>
+            </div>
+            <div class="text-right">
+                <p class="font-bold text-lg 
+                    {% if req.status == 'pending' %} text-yellow-600 
+                    {% elif req.status == 'in_progress' %} text-blue-600 
+                    {% elif req.status == 'completed' %} text-green-600 
+                    {% endif %}">
+                    {{ req.get_status_display }}
+                </p>
+            </div>
+        </div>
+
+        <div class="text-gray-700 mb-4 bg-gray-50 p-3 rounded text-sm">
+            รายละเอียด: {{ req.description }}
+        </div>
+
+        <hr class="my-4">
+        
+        {% if req.status == 'pending' %}
+            <p class="text-sm text-gray-500 italic text-center">คิวของคุณกำลังรอเจ้าหน้าที่จัดสรรช่าง...</p>
+        
+        {% elif req.status == 'in_progress' %}
+            <div class="flex items-center text-blue-600 font-medium text-sm">
+                ช่างกำลังดำเนินการแก้ไขปัญหาให้คุณ
+            </div>
+        
+        {% elif req.status == 'waiting_payment' %}
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <p class="text-orange-800 font-bold mb-2">โปรดชำระค่าบริการ: {{ req.cost }} บาท</p>
+                <form action="{% url 'upload-slip' req.id %}" method="POST" enctype="multipart/form-data" class="space-y-2 flex items-center gap-3">
+                    {% csrf_token %}
+                    <input type="file" name="slip_image" required class="text-sm">
+                    <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 text-sm">ส่งสลิป</button>
+                </form>
+            </div>
+            
+        {% elif req.status == 'verifying' %}
+            <p class="text-orange-600 font-bold text-center">กำลังตรวจสอบยอดชำระเงิน...</p>
+
+        {% elif req.status == 'completed' %}
+            <p class="text-green-600 font-bold text-center">✅ เสร็จสมบูรณ์แล้ว ขอบคุณที่ใช้บริการ</p>
+        {% endif %}
+
+    </div>
+    {% empty %}
+    <p class="text-center text-gray-400">ยังไม่มีประวัติการแจ้งซ่อมในขณะนี้</p>
+    {% endfor %}
+</div>
+{% endblock %}

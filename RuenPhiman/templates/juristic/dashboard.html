@@ -1,0 +1,78 @@
+{% extends 'role_layout.html' %}
+{% block content %}
+    <div>
+        <h1 class="text-3xl font-bold mb-1">Dashboard</h1>
+        <p class="text-gray-600 mb-6">ภาพรวมระบบจัดการอาคาร</p>
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="p-4 bg-white border rounded-lg shadow-sm">
+                <div class="text-sm text-gray-500 mb-2">ค่าชำระแล้ว</div>
+                <div class="text-3xl font-bold text-green-600">{{ billing_stats.paid }}</div>
+            </div>
+            <div class="p-4 bg-white border rounded-lg shadow-sm">
+                <div class="text-sm text-gray-500 mb-2">ค้างชำระ</div>
+                <div class="text-3xl font-bold text-yellow-600">{{ billing_stats.pending }}</div>
+            </div>
+            <div class="p-4 bg-white border rounded-lg shadow-sm">
+                <div class="text-sm text-gray-500 mb-2">เกินกำหนด</div>
+                <div class="text-3xl font-bold text-red-600">{{ billing_stats.overdue }}</div>
+            </div>
+            <div class="p-4 bg-white border rounded-lg shadow-sm">
+                <div class="text-sm text-gray-500 mb-2">งานค้างชำระ</div>
+                <div class="text-3xl font-bold">{{ maintenance_stats.pending }}</div>
+                <div class="text-xs text-gray-500">ยิ่ง {{ maintenance_stats.high_priority }} งาน</div>
+            </div>
+        </div>
+        <!-- Recent Incidents & Maintenance Schedule -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <!-- Recent Incidents -->
+            <div class="p-4 bg-white border rounded-lg shadow-sm">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2">
+                    <span class="text-red-400">⚠️</span> Recent Incidents
+                </h2>
+                <div class="space-y-2">
+                    {% for incident in recent_incidents %}
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <div class="font-semibold">{{ incident.title }}</div>
+                            <div class="text-sm text-gray-600">
+                                <span class="inline-block px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold mr-2">{{ incident.get_priority_display }}</span>
+                                {{ incident.created_at|timesince }} ago
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-gray-500 text-sm">No recent incidents</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Maintenance Schedule -->
+            <div class="p-4 bg-white border rounded-lg shadow-sm">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2">
+                    <span class="text-teal-400">📈</span> Maintenance Schedule
+                </h2>
+                <div class="space-y-2">
+                    {% for item in maintenance_schedule %}
+                        <div class="p-3 bg-teal-50 rounded-lg">
+                            <div class="font-semibold">{{ item.task }}</div>
+                            <div class="text-sm text-gray-600">{{ item.time }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- Bottom Stats -->
+        <div class="grid grid-cols-3 gap-4">
+            <div class="p-4 bg-white border rounded-lg shadow-sm text-center">
+                <div class="text-sm text-gray-500 mb-2">System Uptime</div>
+                <div class="text-3xl font-bold">99.8%</div>
+            </div>
+            <div class="p-4 bg-white border rounded-lg shadow-sm text-center">
+                <div class="text-sm text-gray-500 mb-2">Energy Consumption</div>
+                <div class="text-3xl font-bold">1,234 kWh</div>
+            </div>
+            <div class="p-4 bg-white border rounded-lg shadow-sm text-center">
+                <div class="text-sm text-gray-500 mb-2">Security Level</div>
+                <div class="text-3xl font-bold text-green-600">✓ Normal</div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

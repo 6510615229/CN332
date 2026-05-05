@@ -1,0 +1,75 @@
+{% extends 'role_layout.html' %}
+
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-4">Reports & Analytics</h1>
+    <p class="mb-6 text-gray-600">อัปโหลดรายงานประจำเดือนสำหรับฝ่ายนิติและผู้บริหาร</p>
+
+    <div class="mb-6">
+        <details class="border rounded-lg bg-slate-50">
+            <summary class="cursor-pointer px-4 py-3 font-bold text-lg text-slate-800 bg-slate-100 rounded-t-lg">
+                Upload Monthly Report
+            </summary>
+            <div class="px-4 py-4 space-y-4">
+                <p class="text-sm text-slate-600">กรุณาเลือกไฟล์และกรอกข้อมูลให้ครบถ้วนก่อนกด Upload</p>
+                <form method="post" enctype="multipart/form-data" novalidate class="space-y-4">
+                    {% csrf_token %}
+                    {% if report_form.non_field_errors %}
+                        <div class="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                            {{ report_form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700" for="id_title">Report Title</label>
+                        {{ report_form.title }}
+                        {{ report_form.title.errors }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700" for="id_file">Report File</label>
+                        {{ report_form.file }}
+                        {{ report_form.file.errors }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700" for="id_report_month">Report Month</label>
+                        {{ report_form.report_month }}
+                        {{ report_form.report_month.errors }}
+                    </div>
+
+                    <button type="submit" class="button">Upload Report</button>
+                </form>
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-bold mb-3">Existing Reports</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-100 text-sm text-gray-700">
+                    <th class="p-3">Title</th>
+                    <th class="p-3">Month/Year</th>
+                    <th class="p-3">Uploaded By</th>
+                    <th class="p-3">Uploaded At</th>
+                    <th class="p-3">Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ report.title }}</td>
+                    <td class="p-3">{{ report.month }}/{{ report.year }}</td>
+                    <td class="p-3">{{ report.uploaded_by }}</td>
+                    <td class="p-3">{{ report.uploaded_at|date:'Y-m-d H:i' }}</td>
+                    <td class="p-3"><a class="text-indigo-600 hover:underline" href="{{ report.file.url }}" target="_blank">Download</a></td>
+                </tr>
+                {% empty %}
+                <tr><td class="p-3" colspan="5">ยังไม่มีรายงาน</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

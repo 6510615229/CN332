@@ -1,0 +1,7 @@
+{
+  "ignore": "T002,T003",
+  "max_line_length": 120,
+  "indent": 2,
+  "format_css": true,
+  "format_js": true
+}
