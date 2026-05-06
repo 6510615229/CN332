@@ -11,4 +11,5 @@ urlpatterns = [
     path('chat-room/', views.chat_room, name='chat_room'),
     path('chatbot/api/', views.chatbot_api, name='chatbot_api'),
     path('upload-slip/<int:request_id>/', views.upload_slip_view, name='upload_slip'),
+    path('notifications/read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),
 ]
