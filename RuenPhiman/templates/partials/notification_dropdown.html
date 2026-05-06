@@ -1,0 +1,22 @@
+<!-- templates/partials/notification_dropdown.html -->
+<div class="py-2">
+    <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+        <span class="text-xs font-bold text-gray-500 uppercase">การแจ้งเตือน</span>
+    </div>
+    <ul class="max-h-64 overflow-y-auto">
+        {% for notification in notifications %}
+        <li class="border-b border-gray-50 last:border-0">
+            <a href="{{ notification.link|default:'#' }}" class="block px-4 py-3 hover:bg-gray-50 transition">
+                <p class="text-sm text-gray-800 {% if not notification.is_read %}font-bold{% endif %}">
+                    {{ notification.message }}
+                </p>
+                <span class="text-[10px] text-gray-400">{{ notification.created_at|timesince }} ที่แล้ว</span>
+            </a>
+        </li>
+        {% empty %}
+        <li class="px-4 py-6 text-center text-sm text-gray-400">
+            ไม่มีแจ้งเตือนใหม่
+        </li>
+        {% endfor %}
+    </ul>
+</div>
