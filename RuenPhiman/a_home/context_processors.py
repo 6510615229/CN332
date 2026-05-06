@@ -1,22 +1,27 @@
-# a_home/context_processors.py
 from .models import Notification
+from django.db import connection
 
 def notifications_processor(request):
-    # ตรวจสอบว่า User login หรือยังก่อนดึงข้อมูล
-    if hasattr(request, 'user') and request.user.is_authenticated:
+    """
+    ดึงข้อมูลการแจ้งเตือนส่งไปให้ทุก Template 
+    โดยมีการดัก Error กรณีที่ยังไม่ได้ Migrate ตาราง Notification
+    """
+    if request.user.is_authenticated:
         try:
-            notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:10]
-            unread_count = notifications.filter(is_read=False).count()
-            return {
-                'notifications': notifications,
-                'unread_notifications_count': unread_count
-            }
-        except:
-            # กันเหนื่อยถ้า Database ยังไม่มีตาราง Notification
-            return {
-                'notifications': [],
-                'unread_notifications_count': 0
-            }
+            # เช็กก่อนว่ามีตาราง Notification อยู่ในฐานข้อมูลจริงไหม
+            # (Django จะสร้างชื่อตารางเป็น 'ชื่อแอป_ชื่อโมเดล' เช่น a_home_notification)
+            if 'a_home_notification' in connection.introspection.table_names():
+                notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:10]
+                unread_count = notifications.filter(is_read=False).count()
+                return {
+                    'notifications': notifications,
+                    'unread_notifications_count': unread_count
+                }
+        except Exception:
+            # ถ้าเกิด Error ใดๆ (เช่น ตารางยังไม่มี) ให้ส่งค่าว่างกลับไป
+            pass
+            
+    # กรณีไม่ได้ Login หรือยังไม่มีตาราง ให้แสดงผลเป็นค่าว่าง
     return {
         'notifications': [],
         'unread_notifications_count': 0

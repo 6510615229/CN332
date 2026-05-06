@@ -10,9 +10,9 @@ import json
 import google.generativeai as genai
 from groq import Groq
 
-# เรียกใช้ Model และ Form
-from .models import BillingInvoice, MonthlyReport, Notification # เพิ่ม Notification
-from a_maintenance.models import MaintenanceRequest
+# เรียกใช้ Model และ Form จากภายในแอป a_home ทั้งหมด
+# แก้ไข: ดึง MaintenanceRequest จาก .models แทน a_maintenance.models
+from .models import BillingInvoice, MonthlyReport, Notification, MaintenanceRequest 
 from .forms import MaintenanceTaskForm, MonthlyReportForm, BillingProofForm
 from a_users.models import Profile
 
