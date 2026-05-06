@@ -28,45 +28,61 @@
                     {% endif %}">
                     {{ req.get_status_display }}
                 </p>
+                <span class="text-[10px] text-gray-400">{{ req.created_at|date:"d M Y H:i" }}</span>
             </div>
         </div>
 
         <div class="text-gray-700 mb-4 bg-gray-50 p-3 rounded text-sm">
-            รายละเอียด: {{ req.description }}
+            <strong>รายละเอียด:</strong> {{ req.description }}
         </div>
+
+        {% if req.image %}
+        <div class="mb-4">
+            <img src="{{ req.image.url }}" class="w-32 h-32 object-cover rounded-lg border shadow-sm cursor-pointer hover:scale-105 transition" alt="Maintenance Image">
+        </div>
+        {% endif %}
 
         <hr class="my-4">
         
+        {# --- ส่วนการตอบสนองตามสถานะ --- #}
         {% if req.status == 'pending' %}
             <p class="text-sm text-gray-500 italic text-center">คิวของคุณกำลังรอเจ้าหน้าที่จัดสรรช่าง...</p>
         
         {% elif req.status == 'in_progress' %}
-            <div class="flex items-center text-blue-600 font-medium text-sm">
+            <div class="flex items-center justify-center text-blue-600 font-medium text-sm">
+                <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">...</svg>
                 ช่างกำลังดำเนินการแก้ไขปัญหาให้คุณ
             </div>
         
         {% elif req.status == 'waiting_payment' %}
             <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <p class="text-orange-800 font-bold mb-2">โปรดชำระค่าบริการ: {{ req.cost }} บาท</p>
-                <form action="{% url 'a_home:upload_slip' req.id %}" method="POST" enctype="multipart/form-data" class="space-y-2 flex items-center gap-3">
+                <p class="text-orange-800 font-bold mb-2">โปรดชำระค่าบริการ: {{ req.cost|default:"0" }} บาท</p>
+                <form action="{% url 'a_home:upload_slip' req.id %}" method="POST" enctype="multipart/form-data" class="space-y-2 flex flex-col sm:flex-row items-center gap-3">
                     {% csrf_token %}
-                    <input type="file" name="slip_image" required class="text-sm">
-                    <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 text-sm">ส่งสลิป</button>
+                    <input type="file" name="slip_image" required class="text-sm w-full">
+                    <button type="submit" class="w-full sm:w-auto bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 text-sm transition">
+                        ส่งสลิป
+                    </button>
                 </form>
             </div>
             
         {% elif req.status == 'verifying' %}
-            <p class="text-orange-600 font-bold text-center">กำลังตรวจสอบยอดชำระเงิน...</p>
+            <div class="text-center">
+                <p class="text-orange-600 font-bold">กำลังตรวจสอบยอดชำระเงิน...</p>
+                <p class="text-xs text-gray-400 italic">เจ้าหน้าที่จะดำเนินการยืนยันภายใน 24 ชม.</p>
+            </div>
 
         {% elif req.status == 'completed' %}
-            <p class="text-green-600 font-bold text-center"> เสร็จสมบูรณ์แล้ว ขอบคุณที่ใช้บริการ</p>
+            <p class="text-green-600 font-bold text-center">✅ เสร็จสมบูรณ์แล้ว ขอบคุณที่ใช้บริการ</p>
         {% endif %}
 
     </div>
     {% empty %}
-    <div class="text-center py-10">
+    <div class="text-center py-10 bg-white rounded-lg shadow-inner">
         <p class="text-gray-400">ยังไม่มีประวัติการแจ้งซ่อมในขณะนี้</p>
-        <a href="{% url 'a_home:resident_page' page='repair_form' %}" class="text-indigo-600 underline mt-2 inline-block">ไปหน้าแจ้งซ่อม</a>
+        <a href="{% url 'a_home:resident_page' page='repair_form' %}" class="text-indigo-600 font-bold hover:underline mt-4 inline-block">
+            + เริ่มแจ้งซ่อมใหม่ที่นี่
+        </a>
     </div>
     {% endfor %}
 </div>

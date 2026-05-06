@@ -2,7 +2,6 @@
 
 {% block layout %}
 <div class="flex min-h-[calc(100vh-80px)] bg-gray-50">
-    <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md border-r border-gray-200">
         <div class="p-6 border-b border-gray-100">
             <h2 class="text-xl font-bold text-indigo-600">
@@ -30,7 +29,9 @@
                 
                 {% else %}
                     <li><a href="/resident/chatbot/" class="{% if active_tab == 'chatbot' %}highlight{% endif %}">AI Chatbot</a></li>
-                    <li><a href="{% url 'maintenance-tracking' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
+                    
+                    <li><a href="{% url 'a_home:resident_page' page='ticket' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
+                    
                     <li><a href="/resident/billing/" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                 {% endif %}
 
@@ -38,22 +39,7 @@
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
     <main class="flex-1 p-8">
-        <!-- Notification Header Area -->
-        <div class="flex justify-end mb-4">
-            <ul class="flex items-center gap-4">
-                <!-- กระดิ่งแจ้งเตือนที่เพิ่ม -->
-                <li class="relative">
-                    {% include 'partials/notifications_bell.html' %}
-                </li>
-                <!-- แสดงชื่อผู้ใช้ (Optional: เพิ่มเพื่อให้ Layout ดูสมบูรณ์) -->
-                <li class="text-sm font-medium text-gray-700 border-l pl-4">
-                    {{ user.profile.name|default:user.username }}
-                </li>
-            </ul>
-        </div>
-
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 min-h-full">
             {% block content %}
             {% endblock %}

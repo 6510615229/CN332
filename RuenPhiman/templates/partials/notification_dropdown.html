@@ -1,4 +1,3 @@
-<!-- templates/partials/notification_dropdown.html -->
 <div class="py-2">
     <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
         <span class="text-xs font-bold text-gray-500 uppercase">การแจ้งเตือน</span>
@@ -6,11 +5,27 @@
     <ul class="max-h-64 overflow-y-auto">
         {% for notification in notifications %}
         <li class="border-b border-gray-50 last:border-0">
-            <a href="{{ notification.link|default:'#' }}" class="block px-4 py-3 hover:bg-gray-50 transition">
-                <p class="text-sm text-gray-800 {% if not notification.is_read %}font-bold{% endif %}">
+            
+            {# --- Logic เช็ก Keyword เพื่อเลือกหน้าปลายทาง --- #}
+            {% if 'บิล' in notification.message or 'ชำระ' in notification.message or 'เงิน' in notification.message or 'Billing' in notification.message %}
+                {% url 'a_home:resident_page' page='billing' as target_url %}
+            {% else %}
+                {% url 'a_home:resident_page' page='ticket' as target_url %}
+            {% endif %}
+
+            <a href="{{ target_url }}" 
+               class="block px-4 py-3 hover:bg-gray-50 transition"
+               @click="open = false">
+                <p class="text-sm text-gray-800 {% if not notification.is_read %}font-bold text-black{% else %}text-gray-500{% endif %}">
                     {{ notification.message }}
                 </p>
-                <span class="text-[10px] text-gray-400">{{ notification.created_at|timesince }} ที่แล้ว</span>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-[10px] text-gray-400">{{ notification.created_at|timesince }} ที่แล้ว</span>
+                    
+                    {% if not notification.is_read %}
+                    <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
+                    {% endif %}
+                </div>
             </a>
         </li>
         {% empty %}
@@ -19,4 +34,9 @@
         </li>
         {% endfor %}
     </ul>
+    <div class="p-2 border-t border-gray-100 text-center">
+        <a href="{% url 'a_home:resident_page' page='ticket' %}" class="text-[11px] text-indigo-600 hover:underline">
+            ดูรายการทั้งหมด
+        </a>
+    </div>
 </div>

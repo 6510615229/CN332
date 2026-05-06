@@ -9,6 +9,7 @@ from django.conf import settings
 import json
 import google.generativeai as genai
 from groq import Groq
+from .models import Notification
 
 # เรียกใช้ Model และ Form จากภายในแอป a_home ทั้งหมด
 # แก้ไข: ดึง MaintenanceRequest จาก .models แทน a_maintenance.models
@@ -96,7 +97,7 @@ def role_page_view(request, role, page):
         elif page == 'report': return monthly_report_view(request, base_context)
     
     if user_role == 'resident' and page == 'billing':
-        return billing_view(request)
+        return billing_view(request, base_context=base_context)
 
     response = render(request, f'{role}/{page}.html', base_context)
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -128,11 +129,11 @@ def dashboard_view(request, base_context=None):
     recent_incidents = tasks.filter(priority='high')[:3]
     context = {**base_context, 'billing_stats': billing_stats, 'maintenance_stats': maintenance_stats, 'recent_incidents': recent_incidents}
     return render(request, 'juristic/dashboard.html', context)
-
 @login_required
 def maintenance_risk_report_view(request, base_context=None):
     base_context = base_context or {}
     tasks = MaintenanceRequest.objects.all().order_by('-created_at')
+    
     if request.method == 'POST':
         if 'update_task' in request.POST:
             task = get_object_or_404(MaintenanceRequest, pk=request.POST.get('task_id'))
@@ -142,16 +143,27 @@ def maintenance_risk_report_view(request, base_context=None):
             if assigned_id: task.assigned_to_id = assigned_id
             task.save()
 
-            # --- แจ้งเตือนของจริง: เมื่อนิติอัปเดตงานซ่อม ---
+            # --- แจ้งเตือน: เมื่อนิติอัปเดตงานซ่อม ---
+            # เปลี่ยนเป็น task.resident และ task.title ให้ตรงกับโมเดลที่นาดีนใช้นะครับ
             Notification.objects.create(
-                user=task.resident,
+                user=task.resident,  
                 title="อัปเดตสถานะงานซ่อม",
                 message=f"งาน '{task.title}' ของคุณถูกเปลี่ยนสถานะเป็น: {task.get_status_display()}"
             )
 
             messages.success(request, 'อัปเดตข้อมูลงานซ่อมสำเร็จ')
             return redirect('a_home:juristic_page', page='maintenance')
-    context = {**base_context, 'tasks': tasks, 'status_choices': MaintenanceRequest.STATUS_CHOICES, 'priority_choices': MaintenanceRequest.PRIORITY_CHOICES, 'staff_users': User.objects.filter(is_staff=True)}
+
+    # ✨ พิกัดสำคัญ: ต้องเพิ่มก้อนนี้เข้าไปที่ท้ายฟังก์ชัน (อยู่นอก if POST)
+    # เพื่อให้เวลาเรากด Tab เข้ามาดู (GET) Django จะได้รู้ว่าต้องวาดหน้าไหนออกมา
+    context = {
+        **base_context, 
+        'tasks': tasks, 
+        'status_choices': MaintenanceRequest.STATUS_CHOICES, 
+        'priority_choices': MaintenanceRequest.PRIORITY_CHOICES, 
+        'staff_users': User.objects.filter(is_staff=True)
+    }
+    
     return render(request, 'juristic/maintenance_report.html', context)
 
 @login_required
@@ -195,6 +207,13 @@ def billing_view(request, *args, **kwargs):
             invoice.status = request.POST.get('status')
             if invoice.status == 'paid': invoice.paid_date = timezone.now().date()
             invoice.save()
+            
+            # ✨ แทรกโค้ดแจ้งเตือนตรงนี้ครับนาดีน:
+            Notification.objects.create(
+                user=invoice.resident,  # ส่งหาลูกบ้านเจ้าของบิล
+                title="อัปเดตสถานะบิล",
+                message=f"บิลของคุณได้รับการเปลี่ยนสถานะเป็น: {invoice.get_status_display()}"
+            )
         elif 'upload_proof' in request.POST:
             invoice = get_object_or_404(BillingInvoice, pk=request.POST.get('invoice_id'), resident=request.user)
             slip = request.FILES.get('payment_proof')
@@ -264,4 +283,52 @@ def upload_slip_view(request, request_id):
             maintenance_request.status = 'verifying'
             maintenance_request.save()
             messages.success(request, 'ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว!')
-        return redirect('a_home:resident_page', page='ticket')
+        return redirect('a_home:resident_page', page='ticket')\
+
+def get_notifications_count(request):
+    if request.user.is_authenticated:
+        # ❌ ห้ามใช้ is_seen
+        # ✅ ต้องใช้ is_read เท่านั้น ตามที่ Error แจ้งมาครับ
+        count = Notification.objects.filter(user=request.user, is_read=False).count()
+    else:
+        count = 0
+    # ส่ง count ไปที่หน้ากระดิ่ง
+    return render(request, 'partials/notifications_bell.html', {'count': count})
+
+def notification_list_view(request):
+    if request.user.is_authenticated:
+        notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+        
+        # ✨ ตรงนี้คือจุดที่เราเพิ่งเพิ่มไปเพื่อทำให้เลขสีแดงหายเมื่อกดดู
+        # ต้องใช้ is_read=False และ .update(is_read=True) นะครับ
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    else:
+        notifications = []
+    return render(request, 'partials/notification_dropdown.html', {'notifications': notifications})
+
+# ใน views.py ของหน้า Juristic ตอนเซฟสถานะ
+def update_task_status(request, task_id):
+    task = get_object_or_404(MaintenanceRequest, id=task_id)
+    # ... โค้ดอัปเดตสถานะเดิม ...
+    
+    if task_saved:
+        # 🔔 สำคัญมาก: สร้างแจ้งเตือนส่งไปให้ลูกบ้านที่เป็นเจ้าของห้อง
+        Notification.objects.create(
+            user=task.user,  # ส่งให้เจ้าของคำร้อง
+            message=f"คำร้อง '{task.task}' ของคุณได้รับการอัปเดตเป็น: {task.get_status_display()}"
+        )
+    return redirect(...)
+
+# ใน views.py (ฟังก์ชันที่นิติกดยืนยันยอดเงินเพื่อรองรับการแจ้งเตือนที่ลูกบ้าน)
+def confirm_payment(request, invoice_id):
+    invoice = get_object_or_404(BillingInvoice, id=invoice_id)
+    # ... โค้ดอัปเดตสถานะบิลเดิม
+    invoice.status = 'Paid' 
+    invoice.save()
+
+    # 🔔 สร้างแจ้งเตือนส่งให้ลูกบ้านเจ้าของบิล
+    Notification.objects.create(
+        user=invoice.user, # ส่งให้ลูกบ้านคนที่เป็นเจ้าของบิลนี้
+        message=f"บิลรอบเดือน {invoice.month} ของคุณได้รับการยืนยันการชำระเงินแล้วครับ"
+    )
+    return redirect(...)
