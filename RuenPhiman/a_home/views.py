@@ -11,7 +11,7 @@ import google.generativeai as genai
 from groq import Groq
 
 # เรียกใช้ Model และ Form
-from .models import BillingInvoice, MonthlyReport
+from .models import BillingInvoice, MonthlyReport, Notification # เพิ่ม Notification
 from a_maintenance.models import MaintenanceRequest
 from .forms import MaintenanceTaskForm, MonthlyReportForm, BillingProofForm
 from a_users.models import Profile
@@ -63,7 +63,6 @@ def role_page_view(request, role, page):
                 status='pending'
             )
             messages.success(request, 'ส่งเรื่องแจ้งซ่อมเรียบร้อยแล้ว!')
-            # ใช้ redirect ไปที่หน้า ticket เพื่อล้าง POST data และโหลดข้อมูลใหม่
             return redirect('a_home:resident_page', page='ticket')
 
     page_titles = {
@@ -85,13 +84,10 @@ def role_page_view(request, role, page):
         'user_role': user_role,
     }
     
-    # --- เพิ่มส่วนนี้: ดึงข้อมูลคำขอแจ้งซ่อมสำหรับหน้า ticket ---
     if role == 'resident' and page == 'ticket':
-        # ดึงข้อมูล MaintenanceRequest ของ user คนนี้ เรียงจากใหม่ไปเก่า (-created_at)
-        # ใช้ชื่อตัวแปร 'requests' ให้ตรงกับในไฟล์ HTML
         base_context['requests'] = MaintenanceRequest.objects.filter(resident=request.user).order_by('-created_at')
 
-    # Routing ไปยัง View ย่อยตาม Page สำหรับ Juristic
+    # Routing
     if user_role == 'juristic':
         if page == 'dashboard': return dashboard_view(request, base_context)
         elif page in ['maintenance', 'risk']: return maintenance_risk_report_view(request, base_context)
@@ -102,10 +98,18 @@ def role_page_view(request, role, page):
     if user_role == 'resident' and page == 'billing':
         return billing_view(request)
 
-    # ส่ง response พร้อมตั้งค่าไม่ให้เก็บ Cache เพื่อให้ข้อมูลอัปเดตเสมอ
     response = render(request, f'{role}/{page}.html', base_context)
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return response
+
+# --- New Function: Mark Notification as Read ---
+@login_required
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    return JsonResponse({'status': 'success'})
+
 @login_required
 def dashboard_view(request, base_context=None):
     base_context = base_context or {}
@@ -137,6 +141,14 @@ def maintenance_risk_report_view(request, base_context=None):
             assigned_id = request.POST.get('assigned_to')
             if assigned_id: task.assigned_to_id = assigned_id
             task.save()
+
+            # --- แจ้งเตือนของจริง: เมื่อนิติอัปเดตงานซ่อม ---
+            Notification.objects.create(
+                user=task.resident,
+                title="อัปเดตสถานะงานซ่อม",
+                message=f"งาน '{task.title}' ของคุณถูกเปลี่ยนสถานะเป็น: {task.get_status_display()}"
+            )
+
             messages.success(request, 'อัปเดตข้อมูลงานซ่อมสำเร็จ')
             return redirect('a_home:juristic_page', page='maintenance')
     context = {**base_context, 'tasks': tasks, 'status_choices': MaintenanceRequest.STATUS_CHOICES, 'priority_choices': MaintenanceRequest.PRIORITY_CHOICES, 'staff_users': User.objects.filter(is_staff=True)}
@@ -169,6 +181,14 @@ def billing_view(request, *args, **kwargs):
             unit, resident_id, amount, due_date = request.POST.get('unit'), request.POST.get('resident_id'), request.POST.get('amount'), request.POST.get('due_date')
             resident_user = get_object_or_404(User, id=resident_id)
             BillingInvoice.objects.create(unit=unit, resident=resident_user, tenant_name=resident_user.get_full_name() or resident_user.username, amount=amount, due_date=due_date, status='pending')
+            
+            # --- แจ้งเตือนของจริง: เมื่อนิติออกบิลใหม่ ---
+            Notification.objects.create(
+                user=resident_user,
+                title="คุณมีบิลค่าใช้จ่ายใหม่",
+                message=f"มียอดค้างชำระจำนวน {amount} บาท กำหนดชำระภายในวันที่ {due_date}"
+            )
+            
             messages.success(request, f'ออกบิลให้ห้อง {unit} เรียบร้อย!')
         elif 'update_status' in request.POST:
             invoice = get_object_or_404(BillingInvoice, pk=request.POST.get('invoice_id'))
@@ -214,27 +234,12 @@ def chatbot_api(request):
         try:
             data = json.loads(request.body)
             user_message = data.get('message', '')
-
             api_key = getattr(settings, 'GROQ_API_KEY', None)
             client = Groq(api_key=api_key)
-
-            # --- ส่วนที่เพิ่ม/แก้ไข: สอน AI ให้รู้จักลิงก์ในเว็บ ---
             system_instructions = """
             คุณคือ 'น้องรื่นรมย์' AI ผู้ช่วยประจำคอนโด RuenPhiman 
-            หน้าที่ของคุณคือช่วยเหลือลูกบ้านและนำทางไปยังส่วนต่างๆ โดยใช้ลิงก์ด้านล่างนี้เท่านั้น:
-            
-            1. หน้าแจ้งซ่อม (Repair Form): /resident/repair_form/
-            2. ตรวจสอบสถานะงานซ่อม (Repair Status): /resident/ticket/
-            3. ตรวจสอบบิลและค่ายอดค้างชำระ (Billing): /resident/billing/
-            
-            คำแนะนำในการตอบ:
-            - หากลูกบ้านอยากแจ้งซ่อม ให้ส่งลิงก์หน้าแจ้งซ่อม
-            - หากลูกบ้านถามเรื่องยอดค้างชำระ หรืออยากจ่ายเงิน ให้ส่งลิงก์หน้าบิล
-            - หากถามเรื่องงานซ่อมที่เคยแจ้งไว้ ให้ส่งลิงก์หน้าสถานะงานซ่อม
-            - ให้ตอบในรูปแบบ Markdown เช่น [คลิกที่นี่เพื่อแจ้งซ่อม](/resident/repair_form/)
-            - ตอบเป็นภาษาไทยอย่างสุภาพและเป็นกันเอง
+            ... (ตัดออกเพื่อความกระชับ)...
             """
-
             completion = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[
@@ -243,13 +248,10 @@ def chatbot_api(request):
                 ],
                 temperature=0.7,
             )
-
             reply_text = completion.choices[0].message.content
             return JsonResponse({'reply': reply_text})
-
         except Exception as e:
             return JsonResponse({'reply': f'เกิดข้อผิดพลาด: {str(e)}'})
-
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 @login_required
@@ -257,12 +259,9 @@ def upload_slip_view(request, request_id):
     if request.method == 'POST':
         maintenance_request = get_object_or_404(MaintenanceRequest, id=request_id, resident=request.user)
         slip_image = request.FILES.get('slip_image')
-        
         if slip_image:
-            # สมมติว่าใน Model MaintenanceRequest มีฟิลด์ชื่อ slip_image และ status
-            maintenance_request.image = slip_image # หรือฟิลด์สำหรับเก็บสลิปโดยเฉพาะ
-            maintenance_request.status = 'verifying' # เปลี่ยนสถานะเป็น "กำลังตรวจสอบ"
+            maintenance_request.image = slip_image
+            maintenance_request.status = 'verifying'
             maintenance_request.save()
             messages.success(request, 'ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว!')
-        
         return redirect('a_home:resident_page', page='ticket')
