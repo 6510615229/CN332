@@ -7,11 +7,20 @@
         </a>
     </div>
     <nav class="block relative">
-        <ul class="navitems flex items-center justify-center h-full">
+        <ul class="navitems flex items-center justify-center h-full gap-4">
             {% if request.user.is_authenticated %}
             <li><a href="/">Home</a></li>
+
+            <!-- 🔔 ส่วนของกระดิ่งแจ้งเตือนที่เพิ่มเข้ามา -->
+            <li id="notification-bell-container" 
+                hx-get="{% url 'a_home:navbar-notifications' %}" 
+                hx-trigger="load, every 30s"
+                hx-swap="outerHTML">
+              
+            </li>
+
             <li x-data="{ dropdownOpen: false }" class="relative">
-                <a @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" class="cursor-pointer select-none">
+                <a @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" class="cursor-pointer select-none flex items-center gap-2">
                     <img class="h-8 w-8 rounded-full object-cover" src="{{ request.user.profile.avatar }}" alt="Avatar" />
                     {{ request.user.profile.name }}
                     <img x-bind:class="dropdownOpen && 'rotate-180 duration-300'" class="w-4" src="https://img.icons8.com/small/32/ffffff/expand-arrow.png" alt="Dropdown" />

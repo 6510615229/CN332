@@ -33,6 +33,7 @@ class MonthlyReportForm(forms.ModelForm):
     report_month = forms.DateField(
         required=True,
         label='ประจำเดือน/ปี',
+        input_formats=['%Y-%m'],
         widget=forms.DateInput(attrs={
             'type': 'month',
             'class': INPUT_CLASSES,

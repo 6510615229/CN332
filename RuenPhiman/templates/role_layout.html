@@ -18,7 +18,7 @@
                 {% if user.profile.role == 'juristic' %}
                     <li><a href="{% url 'a_home:juristic_page' 'dashboard' %}" class="{% if active_tab == 'dashboard' %}highlight{% endif %}">Dashboard</a></li>
                     <li><a href="{% url 'a_home:juristic_page' 'users' %}" class="{% if active_tab == 'users' %}highlight{% endif %}">User and Roles</a></li>
-                    <li><a href="{% url 'a_home:juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' or active_tab == 'risk' %}highlight{% endif %}">Maintenance Report <span class="ml-2 text-xs font-semibold bg-indigo-100 px-2 py-1 rounded-full">{{ maintenance_count|default:"0" }}</span></a></li>
+                    <li><a href="{% url 'a_home:juristic_page' 'maintenance' %}" class="{% if active_tab == 'maintenance' or active_tab == 'risk' %}highlight{% endif %}">Maintenance Report </a></li>
                     <li><a href="{% url 'a_home:juristic_page' 'billing' %}" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                     <li><a href="{% url 'a_home:juristic_page' 'report' %}" class="{% if active_tab == 'report' %}highlight{% endif %}">Report</a></li>
                 
@@ -29,7 +29,9 @@
                 
                 {% else %}
                     <li><a href="/resident/chatbot/" class="{% if active_tab == 'chatbot' %}highlight{% endif %}">AI Chatbot</a></li>
-                    <li><a href="{% url 'maintenance-tracking' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
+                    
+                    <li><a href="{% url 'a_home:resident_page' page='ticket' %}" class="{% if active_tab == 'ticket' %}highlight{% endif %}">Ticket Tracking</a></li>
+                    
                     <li><a href="/resident/billing/" class="{% if active_tab == 'billing' %}highlight{% endif %}">Billing</a></li>
                 {% endif %}
 
