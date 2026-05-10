@@ -228,7 +228,7 @@ def billing_view(request, *args, **kwargs):
         'resident_users': User.objects.filter(is_staff=False) if role == 'juristic' else None, 'page_title': 'ระบบบัญชีและการเงิน'
     }
     return render(request, f'{role}/billing.html', context)
-
+""""
 @login_required
 def monthly_report_view(request, base_context=None):
     base_context = base_context or {}
@@ -239,7 +239,38 @@ def monthly_report_view(request, base_context=None):
             report.uploaded_by = request.user
             report.save()
             return redirect('a_home:juristic_page', page='report')
+        else:
+          print("❌ Form is invalid!")
+        print(f"Errors: {form.errors.as_data()}")
     context = {**base_context, 'reports': MonthlyReport.objects.all().order_by('-year', '-month'), 'report_form': MonthlyReportForm()}
+    return render(request, 'juristic/monthly_reports.html', context)
+"""
+
+@login_required
+def monthly_report_view(request, base_context=None):
+    base_context = base_context or {}
+    # สร้าง instance ของฟอร์มเปล่ารอไว้สำหรับกรณี GET request
+    report_form = MonthlyReportForm()
+
+    if request.method == 'POST' and 'upload_report' in request.POST:
+        # นำข้อมูลที่ส่งมาใส่ในฟอร์ม
+        report_form = MonthlyReportForm(request.POST, request.FILES)
+        if report_form.is_valid():
+            report = report_form.save(commit=False)
+            report.uploaded_by = request.user
+            report.save()
+            return redirect('a_home:juristic_page', page='report')
+        else:
+            # หากฟอร์มไม่ถูกต้อง จะเก็บ Error ไว้ใน report_form และแสดงใน Terminal
+            print("❌ Form is invalid!")
+            print(f"Errors: {report_form.errors}")
+
+    # ดึงรายการรายงานทั้งหมด และส่ง report_form ตัวที่มีข้อมูล (หรือ Error) กลับไป
+    context = {
+        **base_context, 
+        'reports': MonthlyReport.objects.all().order_by('-year', '-month'), 
+        'report_form': report_form
+    }
     return render(request, 'juristic/monthly_reports.html', context)
 
 # --- AI Chatbot Section ---
@@ -257,7 +288,16 @@ def chatbot_api(request):
             client = Groq(api_key=api_key)
             system_instructions = """
             คุณคือ 'น้องรื่นรมย์' AI ผู้ช่วยประจำคอนโด RuenPhiman 
-            ... (ตัดออกเพื่อความกระชับ)...
+            คุณคือ 'น้องรื่นรมย์' AI ผู้ช่วยประจำคอนโด RuenPhiman 
+            บุคลิก: สุภาพ ใจดี ยิ้มแย้ม และพร้อมช่วยเหลือลูกบ้าน
+
+            หน้าที่ของคุณคือ:
+            1. หากลูกบ้านต้องการ 'แจ้งซ่อม' หรือ 'ซ่อมท่อน้ำ/ไฟ' ให้บอกขั้นตอนและให้ลิงก์นี้: /resident/repair_form/
+            2. หากลูกบ้านต้องการ 'ดูประวัติแจ้งซ่อม' หรือ 'ติดตามงาน' ให้บอกลิงก์นี้: /resident/ticket/
+            3. หากลูกบ้านต้องการ 'ดูบิล' หรือ 'จ่ายเงิน' ให้บอกลิงก์นี้: /resident/billing/
+            4. หากถามเรื่องอื่นนอกเหนือจากนี้ ให้ตอบด้วยความสุภาพและแนะนำให้ติดต่อฝ่ายนิติบุคคลที่ชั้น 1
+
+            คำเตือน: คุณต้องส่งลิงก์ในรูปแบบ HTML tag <a> เพื่อให้ลูกบ้านกดได้ เช่น <a href='/resident/repair_form/'>คลิกที่นี่เพื่อแจ้งซ่อม</a>
             """
             completion = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
@@ -312,7 +352,7 @@ def update_task_status(request, task_id):
     # ... โค้ดอัปเดตสถานะเดิม ...
     
     if task_saved:
-        # 🔔 สำคัญมาก: สร้างแจ้งเตือนส่งไปให้ลูกบ้านที่เป็นเจ้าของห้อง
+        # สร้างแจ้งเตือนส่งไปให้ลูกบ้านที่เป็นเจ้าของห้อง
         Notification.objects.create(
             user=task.user,  # ส่งให้เจ้าของคำร้อง
             message=f"คำร้อง '{task.task}' ของคุณได้รับการอัปเดตเป็น: {task.get_status_display()}"
