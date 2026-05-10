@@ -63,6 +63,18 @@ def role_page_view(request, role, page):
                 image=image,
                 status='pending'
             )
+            
+            # ค้นหา User ที่มี Role เป็น 'juristic'
+            juristic_users = User.objects.filter(profile__role='juristic', is_active=True)
+            
+            for juristic in juristic_users:
+                Notification.objects.create(
+                    user=juristic, # ส่งกระดิ่งไปให้นิติ
+                    title="🛠️ มีคำร้องแจ้งซ่อมใหม่",
+                    message=f"ห้องของ {request.user.username} แจ้งปัญหา: {title}"
+                )
+            # =========================================================
+            
             messages.success(request, 'ส่งเรื่องแจ้งซ่อมเรียบร้อยแล้ว!')
             return redirect('a_home:resident_page', page='ticket')
 
@@ -220,6 +232,17 @@ def billing_view(request, *args, **kwargs):
             if slip:
                 invoice.payment_proof, invoice.proof_uploaded_at, invoice.status = slip, timezone.now(), 'pending'
                 invoice.save()
+                
+                # =========================================================
+                juristic_users = User.objects.filter(profile__role='juristic', is_active=True)
+                for juristic in juristic_users:
+                    Notification.objects.create(
+                        user=juristic,
+                        title="💰 มีการแนบสลิปชำระเงินใหม่",
+                        message=f"ห้อง {invoice.unit} ได้แนบสลิปชำระบิลยอด {invoice.amount} บาท"
+                    )
+                # =========================================================
+                
         return redirect(request.path)
 
     invoices = BillingInvoice.objects.all().order_by('-id') if role == 'juristic' else BillingInvoice.objects.filter(resident=request.user).order_by('-id')
@@ -334,17 +357,26 @@ def get_notifications_count(request):
         count = 0
     # ส่ง count ไปที่หน้ากระดิ่ง
     return render(request, 'partials/notifications_bell.html', {'count': count})
+# 📍 พิกัด: a_home/views.py
 
 def notification_list_view(request):
     if request.user.is_authenticated:
         notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
         
-        # ✨ ตรงนี้คือจุดที่เราเพิ่งเพิ่มไปเพื่อทำให้เลขสีแดงหายเมื่อกดดู
+        # ✨ เพิ่มส่วนนี้: ดึง role ของผู้ใช้ส่งไปด้วย เพื่อให้ Template เลือกลิงก์ได้ถูกหน้า
+        user_role = get_user_role(request.user)
+        
+        # ตรงนี้คือจุดที่เราเพิ่งเพิ่มไปเพื่อทำให้เลขสีแดงหายเมื่อกดดู
         # ต้องใช้ is_read=False และ .update(is_read=True) นะครับ
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     else:
         notifications = []
-    return render(request, 'partials/notification_dropdown.html', {'notifications': notifications})
+        user_role = 'resident' # ค่าเริ่มต้นสำหรับกรณีไม่ได้ Login
+        
+    return render(request, 'partials/notification_dropdown.html', {
+        'notifications': notifications,
+        'user_role': user_role  # ✅ ส่งค่านี้ไปเพื่อให้ HTML {% if user_role == 'juristic' %} ทำงานได้ครับ
+    })
 
 # ใน views.py ของหน้า Juristic ตอนเซฟสถานะ
 def update_task_status(request, task_id):

@@ -6,11 +6,26 @@
         {% for notification in notifications %}
         <li class="border-b border-gray-50 last:border-0">
             
-            {# --- Logic เช็ก Keyword เพื่อเลือกหน้าปลายทาง --- #}
-            {% if 'บิล' in notification.message or 'ชำระ' in notification.message or 'เงิน' in notification.message or 'Billing' in notification.message %}
-                {% url 'a_home:resident_page' page='billing' as target_url %}
+            {# --- Logic เลือกหน้าปลายทางตาม Role และ Keyword --- #}
+            {% if user_role == 'juristic' %}
+                {# 🛠️ ฝั่งนิติบุคคล: แยกหน้าตามประเภทงาน #}
+                {% if 'ซ่อม' in notification.title or 'ซ่อม' in notification.message %}
+                    {# ไปหน้าจัดการงานซ่อม #}
+                    {% url 'a_home:juristic_page' page='maintenance' as target_url %}
+                {% elif 'สลิป' in notification.title or 'ชำระ' in notification.title or 'บิล' in notification.title or 'เงิน' in notification.title %}
+                    {# 💰 ไปหน้าจัดการการเงิน/ตรวจสลิป #}
+                    {% url 'a_home:juristic_page' page='billing' as target_url %}
+                {% else %}
+                    {# กรณีอื่นๆ ไปหน้า Dashboard #}
+                    {% url 'a_home:juristic_page' page='dashboard' as target_url %}
+                {% endif %}
             {% else %}
-                {% url 'a_home:resident_page' page='ticket' as target_url %}
+                {# 🏠 ฝั่งลูกบ้าน: แยกไปหน้า Billing หรือ Ticket #}
+                {% if 'บิล' in notification.message or 'ชำระ' in notification.message or 'เงิน' in notification.message %}
+                    {% url 'a_home:resident_page' page='billing' as target_url %}
+                {% else %}
+                    {% url 'a_home:resident_page' page='ticket' as target_url %}
+                {% endif %}
             {% endif %}
 
             <a href="{{ target_url }}" 
@@ -21,7 +36,6 @@
                 </p>
                 <div class="flex justify-between items-center mt-1">
                     <span class="text-[10px] text-gray-400">{{ notification.created_at|timesince }} ที่แล้ว</span>
-                    
                     {% if not notification.is_read %}
                     <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
                     {% endif %}
@@ -34,9 +48,17 @@
         </li>
         {% endfor %}
     </ul>
+    
     <div class="p-2 border-t border-gray-100 text-center">
-        <a href="{% url 'a_home:resident_page' page='ticket' %}" class="text-[11px] text-indigo-600 hover:underline">
-            ดูรายการทั้งหมด
-        </a>
+        {# ลิงก์ดูทั้งหมดด้านล่างกระดิ่ง #}
+        {% if user_role == 'juristic' %}
+            <a href="{% url 'a_home:juristic_page' page='maintenance' %}" class="text-[11px] text-indigo-600 hover:underline">
+                ดูรายการทั้งหมด
+            </a>
+        {% else %}
+            <a href="{% url 'a_home:resident_page' page='ticket' %}" class="text-[11px] text-indigo-600 hover:underline">
+                ดูรายการทั้งหมด
+            </a>
+        {% endif %}
     </div>
 </div>
