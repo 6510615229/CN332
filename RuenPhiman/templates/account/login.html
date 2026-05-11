@@ -1,9 +1,11 @@
 {% extends "account/base_entrance.html" %}
 {% load i18n %}
 {% load allauth account %}
+
 {% block head_title %}
     {% trans "Login" %}
 {% endblock head_title %}
+
 {% block content %}
     <h1>Login</h1>
     <p>
@@ -11,22 +13,52 @@
     <a href="{% url 'account_signup' %}?next={% url 'profile-onboarding' %}">sign up</a> first.
     </p>
     {% url 'account_login' as login_url %}
+    
     {% element form form=form method="post" action=login_url tags="entrance,login" %}
         {% slot body %}
             {% csrf_token %}
-            {% element fields form=form unlabeled=True %}
-            {% endelement %}
+            
+            <!-- 1. ช่อง Username / Email -->
+            <div style="margin-bottom: 15px;">
+                {{ form.login }}
+                <div class="text-danger" style="font-size: 0.85rem; margin-top: 5px;">{{ form.login.errors }}</div>
+            </div>
+            
+            <!-- 2. ช่อง Password -->
+            <div style="margin-bottom: 5px;">
+                {{ form.password }}
+                <div class="text-danger" style="font-size: 0.85rem; margin-top: 5px;">{{ form.password.errors }}</div>
+            </div>
+
+            <!-- 3. ลิงก์ Forgot Password (แยกมาอยู่ชิดซ้ายใต้ Password) -->
+            <div style="margin-bottom: 15px; text-align: left;">
+                <a href="{% url 'account_reset_password' %}" style="font-size: 0.9rem; text-decoration: none; color: #4f46e5;">
+                    Forgot your password?
+                </a>
+            </div>
+
+            <!-- 4. ช่อง Remember Me (แยกบรรทัด บังคับไม่ให้คำโดนตัด) -->
+            <div style="margin-bottom: 25px; text-align: left;">
+                <label for="{{ form.remember.id_for_label }}" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                    {{ form.remember }}
+                    <!-- white-space: nowrap; คือคำสั่งห้ามตัดคำขึ้นบรรทัดใหม่ -->
+                    <span style="color: #6c757d; font-size: 0.9rem; white-space: nowrap;">Remember me</span>
+                </label>
+            </div>
+
             {% if redirect_field_value %}
                 <input type="hidden"
                        name="{{ redirect_field_name }}"
                        value="{{ redirect_field_value }}" />
             {% endif %}
         {% endslot %}
+        
         {% slot actions %}
             {% element button type="submit" tags="prominent,login" %}
                 {% trans "Sign In" %}
             {% endelement %}
         {% endslot %}
     {% endelement %}
+    
     {% include 'a_users/social_logins.html' %}
 {% endblock content %}

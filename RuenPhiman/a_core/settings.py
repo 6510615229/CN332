@@ -75,10 +75,8 @@ INSTALLED_APPS = [
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            # แก้จากเดิมเป็นแบบนี้
-            'client_id': env('OAUTH_GOOGLE_CLIENT_ID', default='dummy_id'),
-            'client_secret': env('OAUTH_GOOGLE_CLIENT_SECRET', default='dummy_secret'),
-            'key':''
+            'client_id': env('OAUTH_GOOGLE_CLIENT_ID'),
+            'secret': env('OAUTH_GOOGLE_SECRET'),
         },
         'SCOPE': {
             'profile',
@@ -91,18 +89,17 @@ SOCIALACCOUNT_PROVIDERS = {
     },
     'github': {
         'APP': {
-            'client_id': env('OAUTH_GITHUB_CLIENT_ID', default='dummy'),
-            'client_secret': env('OAUTH_GITHUB_CLIENT_SECRET', default='dummy'),
+            'client_id': env('OAUTH_GITHUB_CLIENT_ID'),
+            'secret': env('OAUTH_GITHUB_SECRET'),
         },
         'AUTH_PARAMS': {
             'prompt': 'consent',
         }
     },
-    
     'line': {
         'APP': {
-            'client_id': env('OAUTH_LINE_CLIENT_ID', default='dummy'),
-            'secret': env('OAUTH_LINE_SECRET', default='dummy'),
+            'client_id': env('OAUTH_LINE_CLIENT_ID'),
+            'secret': env('OAUTH_LINE_SECRET'),
             'key': ''
         },
         'SCOPE': [
@@ -217,7 +214,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 
