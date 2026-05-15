@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from a_home.mock_incidents import get_seed_incidents
+from a_home.mock_security import get_seed_incidents
 from a_home.models import Incident
 
 
