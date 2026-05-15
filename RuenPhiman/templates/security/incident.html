@@ -1,0 +1,73 @@
+{% extends 'role_layout.html' %}
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-1">Incident Log</h1>
+    <p class="text-gray-600 mb-6">Record and track security incidents in the building.</p>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
+        <div class="p-5 bg-white border rounded-xl shadow-sm">
+            <h2 class="text-lg font-bold mb-4">Log New Incident</h2>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <label for="{{ incident_form.title.id_for_label }}" class="!block text-sm font-medium text-gray-700">Title</label>
+                    {{ incident_form.title }}
+                </div>
+                <div class="grid grid-cols-[110px_1fr] items-start gap-3">
+                    <label for="{{ incident_form.description.id_for_label }}" class="!block pt-3 text-sm font-medium text-gray-700">Description</label>
+                    {{ incident_form.description }}
+                </div>
+                <div class="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <label for="{{ incident_form.location.id_for_label }}" class="!block text-sm font-medium text-gray-700">Location</label>
+                    {{ incident_form.location }}
+                </div>
+                <div class="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <label for="{{ incident_form.severity.id_for_label }}" class="!block text-sm font-medium text-gray-700">Severity</label>
+                    {{ incident_form.severity }}
+                </div>
+                <div class="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <label for="{{ incident_form.status.id_for_label }}" class="!block text-sm font-medium text-gray-700">Status</label>
+                    {{ incident_form.status }}
+                </div>
+                <div class="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <label for="{{ incident_form.occurred_at.id_for_label }}" class="!block text-sm font-medium text-gray-700">Occurred At</label>
+                    {{ incident_form.occurred_at }}
+                </div>
+                <button type="submit">Save Incident</button>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto bg-white border rounded-xl shadow-sm">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-sm text-gray-600 border-b">
+                        <th class="p-4">Incident</th>
+                        <th class="p-4">Location</th>
+                        <th class="p-4">Severity</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4">Reported By</th>
+                        <th class="p-4">Occurred</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incident in incidents %}
+                        <tr class="border-b last:border-0 hover:bg-gray-50">
+                            <td class="p-4">
+                                <div class="font-semibold">{{ incident.title }}</div>
+                                <div class="text-sm text-gray-500">{{ incident.description|truncatechars:70 }}</div>
+                            </td>
+                            <td class="p-4">{{ incident.location }}</td>
+                            <td class="p-4">{{ incident.get_severity_display }}</td>
+                            <td class="p-4">{{ incident.get_status_display }}</td>
+                            <td class="p-4">{% if incident.reported_by %}{{ incident.reported_by.username }}{% else %}-{% endif %}</td>
+                            <td class="p-4 text-sm text-gray-500">{{ incident.occurred_at|date:'d M Y H:i' }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="p-8 text-center text-gray-500">No incidents logged yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

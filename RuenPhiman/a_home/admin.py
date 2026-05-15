@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MaintenanceRequest, BillingInvoice, MonthlyReport
+from .models import MaintenanceRequest, BillingInvoice, MonthlyReport, Camera, Incident
 
 @admin.register(MaintenanceRequest)
 class MaintenanceRequestAdmin(admin.ModelAdmin):
@@ -19,3 +19,17 @@ class BillingInvoiceAdmin(admin.ModelAdmin):
     list_display = ('unit', 'tenant_name', 'resident', 'amount', 'due_date', 'paid_date', 'status', 'payment_proof')
     list_filter = ('status', 'due_date')
     search_fields = ('unit', 'tenant_name')
+
+
+@admin.register(Camera)
+class CameraAdmin(admin.ModelAdmin):
+    list_display = ('name', 'location', 'status', 'last_checked_at')
+    list_filter = ('status',)
+    search_fields = ('name', 'location')
+
+
+@admin.register(Incident)
+class IncidentAdmin(admin.ModelAdmin):
+    list_display = ('title', 'location', 'severity', 'status', 'reported_by', 'occurred_at')
+    list_filter = ('severity', 'status')
+    search_fields = ('title', 'description', 'location')

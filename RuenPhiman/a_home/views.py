@@ -7,14 +7,12 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.conf import settings
 import json
-import google.generativeai as genai
-from groq import Groq
-from .models import Notification
 
 # เรียกใช้ Model และ Form จากภายในแอป a_home ทั้งหมด
 # แก้ไข: ดึง MaintenanceRequest จาก .models แทน a_maintenance.models
-from .models import BillingInvoice, MonthlyReport, Notification, MaintenanceRequest 
-from .forms import MaintenanceTaskForm, MonthlyReportForm, BillingProofForm
+from .models import BillingInvoice, MonthlyReport, Notification, MaintenanceRequest, Camera, Incident
+from .forms import MaintenanceTaskForm, MonthlyReportForm, BillingProofForm, IncidentForm
+from .mock_cctv import MOCK_CAMERAS
 from a_users.models import Profile
 
 # --- Helper Functions ---
@@ -111,6 +109,11 @@ def role_page_view(request, role, page):
     if user_role == 'resident' and page == 'billing':
         return billing_view(request, base_context=base_context)
 
+    if user_role == 'security':
+        if page == 'dashboard': return security_dashboard_view(request, base_context)
+        elif page == 'cctv': return security_cctv_view(request, base_context)
+        elif page == 'incident': return security_incident_view(request, base_context)
+
     response = render(request, f'{role}/{page}.html', base_context)
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return response
@@ -141,6 +144,64 @@ def dashboard_view(request, base_context=None):
     recent_incidents = tasks.filter(priority='high')[:3]
     context = {**base_context, 'billing_stats': billing_stats, 'maintenance_stats': maintenance_stats, 'recent_incidents': recent_incidents}
     return render(request, 'juristic/dashboard.html', context)
+
+
+@login_required
+def security_dashboard_view(request, base_context=None):
+    base_context = base_context or {}
+    cameras = list(Camera.objects.all())
+    if not cameras:
+        cameras = MOCK_CAMERAS
+    if cameras and isinstance(cameras[0], dict):
+        camera_statuses = [camera['status'] for camera in cameras]
+    else:
+        camera_statuses = [camera.status for camera in cameras]
+    recent_incidents = Incident.objects.select_related('reported_by')[:5]
+    context = {
+        **base_context,
+        'camera_stats': {
+            'total': len(cameras),
+            'active': camera_statuses.count('active'),
+            'inactive': camera_statuses.count('inactive'),
+            'maintenance': camera_statuses.count('maintenance'),
+        },
+        'open_incidents': Incident.objects.exclude(status='resolved').count(),
+        'recent_incidents': recent_incidents,
+    }
+    return render(request, 'security/dashboard.html', context)
+
+
+@login_required
+def security_cctv_view(request, base_context=None):
+    base_context = base_context or {}
+    cameras = list(Camera.objects.all())
+    if not cameras:
+        cameras = MOCK_CAMERAS
+    context = {**base_context, 'cameras': cameras}
+    return render(request, 'security/cctv.html', context)
+
+
+@login_required
+def security_incident_view(request, base_context=None):
+    base_context = base_context or {}
+    if request.method == 'POST':
+        form = IncidentForm(request.POST)
+        if form.is_valid():
+            incident = form.save(commit=False)
+            incident.reported_by = request.user
+            incident.save()
+            messages.success(request, 'Incident logged successfully.')
+            return redirect('a_home:security_page', page='incident')
+    else:
+        form = IncidentForm()
+
+    context = {
+        **base_context,
+        'incident_form': form,
+        'incidents': Incident.objects.select_related('reported_by').all(),
+        'status_choices': Incident.STATUS_CHOICES,
+    }
+    return render(request, 'security/incident.html', context)
 @login_required
 def maintenance_risk_report_view(request, base_context=None):
     base_context = base_context or {}
@@ -305,6 +366,8 @@ def chat_room(request):
 def chatbot_api(request):
     if request.method == 'POST':
         try:
+            from groq import Groq
+
             data = json.loads(request.body)
             user_message = data.get('message', '')
             api_key = getattr(settings, 'GROQ_API_KEY', None)
