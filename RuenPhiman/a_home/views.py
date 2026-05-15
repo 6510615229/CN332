@@ -208,7 +208,17 @@ def maintenance_risk_report_view(request, base_context=None):
     tasks = MaintenanceRequest.objects.all().order_by('-created_at')
     
     if request.method == 'POST':
-        if 'update_task' in request.POST:
+        if 'create_task' in request.POST:
+            task_form = MaintenanceTaskForm(request.POST)
+            if task_form.is_valid():
+                task = task_form.save(commit=False)
+                task.resident = request.user
+                task.save()
+                messages.success(request, 'สร้างงานซ่อมใหม่สำเร็จ')
+                return redirect('a_home:juristic_page', page='maintenance')
+            else:
+                messages.error(request, 'กรุณาตรวจสอบข้อมูลที่กรอก')
+        elif 'update_task' in request.POST:
             task = get_object_or_404(MaintenanceRequest, pk=request.POST.get('task_id'))
             task.status = request.POST.get('status', task.status)
             task.priority = request.POST.get('priority', task.priority)
@@ -229,9 +239,18 @@ def maintenance_risk_report_view(request, base_context=None):
 
     # ✨ พิกัดสำคัญ: ต้องเพิ่มก้อนนี้เข้าไปที่ท้ายฟังก์ชัน (อยู่นอก if POST)
     # เพื่อให้เวลาเรากด Tab เข้ามาดู (GET) Django จะได้รู้ว่าต้องวาดหน้าไหนออกมา
+    task_form = MaintenanceTaskForm()
+    stats = {
+        'total': tasks.count(),
+        'completed': tasks.filter(status='completed').count(),
+        'in_progress': tasks.filter(status='in_progress').count(),
+        'urgent': tasks.filter(priority='high').count(),
+    }
     context = {
         **base_context, 
-        'tasks': tasks, 
+        'task_form': task_form,
+        'tasks': tasks,
+        'stats': stats,
         'status_choices': MaintenanceRequest.STATUS_CHOICES, 
         'priority_choices': MaintenanceRequest.PRIORITY_CHOICES, 
         'staff_users': User.objects.filter(is_staff=True)

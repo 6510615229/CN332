@@ -3,7 +3,7 @@ from .models import MaintenanceRequest, BillingInvoice, MonthlyReport, Incident
 from datetime import date
 
 # สไตล์ส่วนกลางสำหรับ Input
-INPUT_CLASSES = 'mt-1 block w-full rounded-lg border border-slate-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500'
+INPUT_CLASSES = 'mt-0 block w-full rounded border border-slate-300 bg-white py-1 px-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500'
 
 class MaintenanceTaskForm(forms.ModelForm):
     class Meta:
