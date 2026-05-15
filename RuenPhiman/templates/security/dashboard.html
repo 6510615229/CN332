@@ -1,0 +1,51 @@
+{% extends 'role_layout.html' %}
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-1">Security Dashboard</h1>
+    <p class="text-gray-600 mb-6">Overview of cameras and current building incidents.</p>
+
+    <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Total Cameras</div>
+            <div class="text-3xl font-bold">{{ camera_stats.total }}</div>
+        </div>
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Active</div>
+            <div class="text-3xl font-bold text-green-600">{{ camera_stats.active }}</div>
+        </div>
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Inactive</div>
+            <div class="text-3xl font-bold text-red-600">{{ camera_stats.inactive }}</div>
+        </div>
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Open Incidents</div>
+            <div class="text-3xl font-bold text-amber-600">{{ open_incidents }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6">
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <h2 class="text-lg font-bold mb-3">Camera Health</h2>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between"><span>Active cameras</span><span class="font-semibold text-green-600">{{ camera_stats.active }}</span></div>
+                <div class="flex justify-between"><span>Inactive cameras</span><span class="font-semibold text-red-600">{{ camera_stats.inactive }}</span></div>
+                <div class="flex justify-between"><span>Under maintenance</span><span class="font-semibold text-slate-600">{{ camera_stats.maintenance }}</span></div>
+            </div>
+        </div>
+
+        <div class="p-4 bg-white border rounded-lg shadow-sm">
+            <h2 class="text-lg font-bold mb-3">Recent Incidents</h2>
+            <div class="space-y-3">
+                {% for incident in recent_incidents %}
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <div class="font-semibold">{{ incident.title }}</div>
+                        <div class="text-sm text-gray-600">{{ incident.location }} · {{ incident.get_severity_display }} · {{ incident.get_status_display }}</div>
+                    </div>
+                {% empty %}
+                    <div class="text-sm text-gray-500">No incidents logged yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

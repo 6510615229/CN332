@@ -1,5 +1,5 @@
 from django import forms
-from .models import MaintenanceRequest, BillingInvoice, MonthlyReport
+from .models import MaintenanceRequest, BillingInvoice, MonthlyReport, Incident
 from datetime import date
 
 # สไตล์ส่วนกลางสำหรับ Input
@@ -60,3 +60,30 @@ class MonthlyReportForm(forms.ModelForm):
             self.instance.month = report_month.month
             self.instance.year = report_month.year
         return super().save(commit=commit)
+
+
+class IncidentForm(forms.ModelForm):
+    class Meta:
+        model = Incident
+        fields = ['title', 'description', 'location', 'severity', 'status', 'occurred_at']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': INPUT_CLASSES,
+                'placeholder': 'e.g. Unauthorized entry at main gate',
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 3,
+                'class': INPUT_CLASSES,
+                'placeholder': 'Describe what happened...',
+            }),
+            'location': forms.TextInput(attrs={
+                'class': INPUT_CLASSES,
+                'placeholder': 'e.g. Lobby, Parking B1, Floor 3',
+            }),
+            'severity': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'status': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'occurred_at': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': INPUT_CLASSES,
+            }),
+        }
