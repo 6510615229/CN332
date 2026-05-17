@@ -2,7 +2,7 @@
 <header class="flex items-center justify-between bg-gray-800 h-20 px-8 text-white sticky top-0 z-40">
     <div>
         <a class="flex items-center gap-2" href="/">
-            <img class="h-6" src="{% static 'images/logo.svg' %}" alt="Logo"/>
+            <img class="h-20" src="{% static 'images/Logo.png' %}" alt="Logo"/>
             <span class="text-lg font-bold">Ruen Phiman</span>
         </a>
     </div>
@@ -41,7 +41,7 @@
             
             {% else %}
             <li><a href="{% url 'account_login' %}">Login</a></li>
-            <li><a href="{% url 'account_signup' %}?next={% url 'profile-onboarding' %}">Signup</a></li>
+            <li><a href="{% url 'account_signup' %}?next={% url 'profile-onboarding' %}">Sign up</a></li>
             {% endif %}
         </ul>
     </nav>
