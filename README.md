@@ -61,31 +61,36 @@
 - 5.3 ลดค่าใช้จ่ายในระยะยาว: ระบบ Predictive Maintenance และ Smart Energy Control ช่วยประหยัดงบประมาณในการซ่อมบำรุงและค่าสาธารณูปโภคส่วนกลาง
 - 5.4 สร้างประสบการณ์ที่ดีแก่ผู้อยู่อาศัย: ลูกบ้านได้รับการบริการที่รวดเร็ว ทันสมัยและสามารถเข้าถึงข้อมูลได้ทุกที่ทุกเวลา
 
-
 # Django Social Login Demo (Google, LINE)
 
 โปรเจกต์ตัวอย่าง Web Application ด้วย Django ที่รองรับระบบสมาชิก (Login/Register) และการเข้าสู่ระบบผ่าน Social Media (Google, LINE) โดยใช้ `django-allauth` และรองรับ HTTPS
 
 ## Features
-*   Login / Register / Logout ด้วย Username & Email ปกติ
-*   **Social Login:**
-    *   Google
-    *   LINE (พร้อมระบบดึง Display Name มาเป็น Username อัตโนมัติ)
-*   User Profile ขั้นพื้นฐาน
-*   รองรับ HTTPS บน localhost
+
+- Login / Register / Logout ด้วย Username & Email ปกติ
+
+- **Social Login:**
+  - Google
+  - LINE (พร้อมระบบดึง Display Name มาเป็น Username อัตโนมัติ)
+- User Profile ขั้นพื้นฐาน
+- รองรับ HTTPS บน localhost
 
 ## Requirements
-*   Python 3.10+
-*   Google Chrome / Microsoft Edge (สำหรับทดสอบ)
+
+- Python 3.10+
+
+- Google Chrome / Microsoft Edge (สำหรับทดสอบ)
 
 ## Installation
 
 1. **Clone Repository**
+
    ```bash
    git clone https://github.com/6510615229/CN332
    cd CN332
 
 2. **Create Virtual Environment**
+
    ```bash
    python -m venv venv
 
@@ -96,19 +101,22 @@
    source venv/bin/activate
 
 3. **Install Dependencies**
+
     ```bash
     pip install -r requirements.txt
 
 4. **Create .env file**\
 ***Create .env file in /core and add client id and secret key***
- 
+
 5. **Setup Database**
+
    ```bash
    python manage.py migrate
    python manage.py createsuperuser
    # or "winpty python manage.py createsuperuser" if the above command isn't working
    
 6. **Running the Application**
+
    ```bash
    python manage.py runsslserver
 
@@ -117,25 +125,31 @@
 โปรเจกต์ตัวอย่าง Web Application เรือนพิมาณ
 
 ## Features
-*   Login / Register / Logout ด้วย Username & Email ปกติ
-*   **Social Login:**
-    *   Google
-    *   Github
-    *   LINE (พร้อมระบบดึง Display Name มาเป็น Username อัตโนมัติ)
-*   User Profile ขั้นพื้นฐาน
+
+- Login / Register / Logout ด้วย Username & Email ปกติ
+
+- **Social Login:**
+  - Google
+  - Github
+  - LINE (พร้อมระบบดึง Display Name มาเป็น Username อัตโนมัติ)
+- User Profile ขั้นพื้นฐาน
 
 ## Requirements
-*   Python 3.10+
-*   Google Chrome / Microsoft Edge (สำหรับทดสอบ)
+
+- Python 3.10+
+
+- Google Chrome / Microsoft Edge (สำหรับทดสอบ)
 
 ## Installation
 
 1. **Clone Repository**
+
    ```bash
    git clone https://github.com/6510615229/CN332
    cd CN332
 
 2. **Create Virtual Environment**
+
    ```bash
    python -m venv venv
 
@@ -149,22 +163,47 @@
    source venv/bin/activate
 
 3. **Install Dependencies**
+
     ```bash
     cd RuenPhiman
     pip install -r requirements.txt
 
 4. **Create .env file**\
 ***Create .env file in /a_core and add client id and secret key***
- 
+
 5. **Setup Database**
+
    ```bash
    python manage.py migrate
    python manage.py createsuperuser
    # or "winpty python manage.py createsuperuser" if the above command isn't working
    
 6. **Running the Application**
+
    ```bash
    python manage.py runserver
+
+---
+
+## Demo Accounts
+
+#### Resident Role (ลูกบ้าน)
+
+username: resident01
+password: rs012345
+
+#### Juristic Role (นิติบุคคล)
+
+username: juristic01
+password: jr012345
+
+#### Security Role (รปภ.)
+
+username: security01
+password: sc012345
+
+---
+
 ## สมาชิกกลุ่ม
 
 6410525023 ศรุตา มีงาม\
@@ -174,15 +213,20 @@
 6510615229 พลกฤต กันยายน\
 6510615245 พลอยพรรณ เต็งประยูร
 
-
 ---
 
 - Progress 1 Slides - <https://www.canva.com/design/DAG-FqGxhog/WETEw5bAeZQ68bH7k0k9ag/edit>
 - Progress 2 Slides - <https://www.canva.com/design/DAG_a04WSwg/FQ1uPqs1NCROcNY8U0ofHw/edit>
 - Progress 3 Slides - <https://www.canva.com/design/DAG_bOAeYPk/uN6iEoaxicajIgmomTNfaA/edit>
 - Progress 4 Slides - <https://www.canva.com/design/DAG_93YBSAo/bHV2WP_b1Eg1D0n5VauCHw/edit>
+- Progress 5 Slides - <https://canva.link/wf47zj5esuvgv8w>
+- Progress 6-7 Slides - <https://canva.link/1q1sv27wu9mzerd>
+- Progress 8 Slides - <https://canva.link/elym3ibizntgbwz>
+- Final Progress Slides - <https://canva.link/pniew0vnuzavqxs>
 
 ---
+
 ## Presentation Date
+
 - First presentation - 26/01/2026
 - Second presentation - 20/04/2026
