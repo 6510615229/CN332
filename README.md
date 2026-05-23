@@ -189,18 +189,18 @@
 
 #### Resident Role (ลูกบ้าน)
 
-username: resident01
-password: rs012345
+- username: resident01
+- password: rs012345
 
 #### Juristic Role (นิติบุคคล)
 
-username: juristic01
-password: jr012345
+- username: juristic01
+- password: jr012345
 
 #### Security Role (รปภ.)
 
-username: security01
-password: sc012345
+- username: security01
+- password: sc012345
 
 ---
 
